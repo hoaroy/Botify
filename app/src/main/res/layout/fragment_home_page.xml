@@ -230,45 +230,7 @@
 
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
-<!--                <androidx.cardview.widget.CardView-->
-<!--                    android:id="@+id/card_Top_Fruit"-->
-<!--                    android:layout_marginTop="30dp"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    app:cardCornerRadius="15dp"-->
-<!--                    android:backgroundTint="#2589D8">-->
-<!--                    <LinearLayout-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:orientation="vertical"-->
-<!--                        android:layout_gravity="center">-->
-<!--                        <LinearLayout-->
-<!--                            android:layout_width="match_parent"-->
-<!--                            android:layout_height="match_parent"-->
-<!--                            android:orientation="horizontal">-->
-<!--                            <TextView-->
-<!--                                android:layout_width="wrap_content"-->
-<!--                                android:layout_height="wrap_content"-->
-<!--                                android:textStyle="bold"-->
-<!--                                android:textSize="20dp"-->
-<!--                                android:textColor="@color/white"-->
-<!--                                android:text="Những loại hoa quả mua nhiều nhất"/>-->
-<!--                            <ImageView-->
-<!--                                android:layout_width="wrap_content"-->
-<!--                                android:layout_height="wrap_content"-->
-<!--                                android:backgroundTint="#F1EAEA"-->
-<!--                                android:layout_marginTop="5dp"-->
-<!--                                android:layout_marginLeft="25dp"-->
-<!--                                android:background="@drawable/ic_arrow_drop_up"/>-->
-<!--                        </LinearLayout>-->
-<!--                        <androidx.recyclerview.widget.RecyclerView-->
-<!--                            android:id="@+id/rv_FruitTop_Home"-->
-<!--                            android:layout_width="match_parent"-->
-<!--                            android:layout_height="200dp"-->
-<!--                            android:visibility="gone"/>-->
 
-<!--                    </LinearLayout>-->
-<!--                </androidx.cardview.widget.CardView>-->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/card_Top_Meat"
                     android:layout_marginTop="30dp"

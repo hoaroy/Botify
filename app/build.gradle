@@ -67,5 +67,7 @@ dependencies {
     implementation 'io.github.ParkSangGwon:tedpermission-normal:3.3.0'
     implementation 'io.github.ParkSangGwon:tedimagepicker:1.2.8'
     //add them
-
+    implementation "androidx.cardview:cardview:1.0.0"
+    implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'me.relex:circleindicator:2.1.6'
 }
