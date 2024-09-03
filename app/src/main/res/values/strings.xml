@@ -43,34 +43,4 @@
     <string name="uuDai">Ưu đãi</string>
     <string name="trangChu">Trang chủ</string>
     <string name="caNhan">Cá nhân</string>
-
-    //add
-
-    <string name="search_bar">Tìm kiếm tên sách, tên tác giả ...</string>
-    <string name="test_text">Test</string>
-    <string name="trending_text">Thịnh Hành</string>
-    <string name="new_text">Sách Mới</string>
-    <string name="van_hoc_text">Văn học</string>
-    <string name="kinh_te_text">Kinh tế</string>
-    <string name="tam_ly_ky_nang_song_text">Tâm lý</string>
-    <string name="nuoi_day_con_text">Nuôi dạy con</string>
-    <string name="sach_thieu_nhi_text">Thiếu nhi</string>
-    <string name="tieu_su_hoi_ky_text">Hồi ký</string>
-    <string name="giao_khoa_tham_khao_text">Giáo khoa</string>
-    <string name="sach_hoc_ngoai_ngu_text">Ngoại ngữ</string>
-    <string name="all_text">Tất cả</string>
-    <string name="nuoi_day_con">Giáo dục</string>
-    <string name="xem_them_text">Xem thêm</string>
-    <string name="mo_ta_text">Thông tin sản phẩm</string>
-    <string name="nha_cung_cap_text">Nhà cung cấp</string>
-    <string name="tac_gia_text">Tác giả</string>
-    <string name="nha_xuat_ban_text">Nhà xuất bản</string>
-    <string name="add_to_cart_text">Thêm vào giỏ hàng</string>
-    <string name="khach_hang_nhan_xet_text">Khách hàng nhận xét</string>
-    <string name="home">Trang Chủ</string>
-    <string name="favorite">Yêu Thích</string>
-    <string name="account">Tài Khoản</string>
-    <string name="cart">Giỏ Hàng</string>
-    <string name="register_suggestion">Đăng ký tài khoản mới</string>
-    <string name="register">Đăng nhập</string>
 </resources>
