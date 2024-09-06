@@ -68,5 +68,7 @@
     <string name="tac_gia_text">Tác giả</string>
     <string name="slider">slider</string>
     <string name="kinh_t">Kinh tế</string>
+    <string name="main_slider_description">main slider description</string>
+    <string name="sach_moi">Sách mới</string>
 
 </resources>

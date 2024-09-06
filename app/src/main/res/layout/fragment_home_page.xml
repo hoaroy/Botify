@@ -32,7 +32,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="25dp">
+                android:padding="25dp"
+                android:visibility="gone">
 
                 <LinearLayout
                     android:layout_width="295dp"
@@ -55,7 +56,8 @@
                         android:hint="@string/search_bar"
                         android:inputType="text"
                         android:minHeight="48dp"
-                        android:textColor="@color/search_text" />
+                        android:textColor="@color/search_text"
+                        android:autofillHints="" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -80,7 +82,9 @@
                 <androidx.viewpager.widget.ViewPager
                     android:id="@+id/main_slider_image"
                     android:layout_width="match_parent"
-                    android:layout_height="150dp" />
+                    android:layout_height="150dp"
+                    android:contentDescription="@string/main_slider_description" />
+
 
                 <me.relex.circleindicator.CircleIndicator
                     android:id="@+id/circle_indicator"
@@ -99,7 +103,7 @@
 
                 <androidx.cardview.widget.CardView
 
-                    android:id="@+id/card_vegetable_home"
+                    android:id="@+id/card_vanhoc_home"
                     android:layout_width="80dp"
                     android:layout_height="80dp"
                     android:layout_marginHorizontal="10dp"
@@ -111,13 +115,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_marginTop="5dp"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        >
+
 
                         <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:background="@drawable/van_hoc_icon" />
-
 
                         <TextView
                             android:layout_width="match_parent"
@@ -130,7 +135,7 @@
 
                 <androidx.cardview.widget.CardView
 
-                    android:id="@+id/card_fruit_home"
+                    android:id="@+id/card_kinhte_home"
                     android:layout_width="80dp"
                     android:layout_height="80dp"
                     android:layout_marginHorizontal="10dp"
@@ -142,7 +147,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_marginTop="5dp"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        >
 
                         <ImageView
                             android:layout_width="match_parent"
@@ -160,7 +166,7 @@
                 </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/card_meat_home"
+                    android:id="@+id/card_tamly_home"
                     android:layout_width="80dp"
                     android:layout_height="80dp"
                     android:layout_marginHorizontal="10dp"
@@ -191,7 +197,7 @@
 
                 <androidx.cardview.widget.CardView
 
-                    android:id="@+id/card_food_home"
+                    android:id="@+id/card_giaoduc_home"
                     android:layout_width="80dp"
                     android:layout_height="80dp"
                     android:layout_marginHorizontal="10dp"
@@ -356,7 +362,7 @@
                 android:orientation="vertical">
 
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/card_Top_Vegetable"
+                    android:id="@+id/card_trending_home"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:backgroundTint="#EAF0F3"
@@ -379,7 +385,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="@string/trending_text"
                                 android:textColor="@color/black"
-                                android:textSize="20dp"
+                                android:textSize="20sp"
                                 android:textStyle="bold" />
 
                             <ImageView
@@ -393,7 +399,7 @@
                         </LinearLayout>
 
                         <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rv_VegetableTop_Home"
+                            android:id="@+id/rv_trending_home"
                             android:layout_width="match_parent"
                             android:layout_height="200dp"
                             android:visibility="gone" />
@@ -406,9 +412,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="30dp"
-                    android:backgroundTint="#2589D8"
+                    android:backgroundTint="#E9EEF3"
 
-                    android:visibility="gone"
                     app:cardCornerRadius="15dp">
 
                     <LinearLayout
@@ -426,9 +431,9 @@
                             <TextView
                                 android:layout_width="330dp"
                                 android:layout_height="wrap_content"
-                                android:text="Những loại hoa quả mua nhiều nhất"
-                                android:textColor="@color/white"
-                                android:textSize="20dp"
+                                android:text="@string/sach_moi"
+                                android:textColor="@color/black"
+                                android:textSize="20sp"
                                 android:textStyle="bold" />
 
                             <ImageView

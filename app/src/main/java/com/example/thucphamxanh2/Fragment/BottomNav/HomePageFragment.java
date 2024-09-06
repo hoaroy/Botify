@@ -55,11 +55,11 @@ public class HomePageFragment extends Fragment {
     private List<Product> listProduct = new ArrayList<>();
     ProductAdapter adapter;
 
-    CardView card_vegetable_home,card_fruit_home,card_meat_home,card_food_home;
+    CardView card_vanhoc_home,card_kinhte_home,card_tamly_home,card_giaoduc_home;
 
-    CardView card_Top_Vegetable,card_Top_Fruit,card_Top_Meat,card_Top_Food;
+    CardView card_trending_home,card_Top_Fruit,card_Top_Meat,card_Top_Food;
 
-    RecyclerView rv_VegetableTop_Home,rv_FruitTop_Home,rv_MeatTop_Home,rv_FoodTop_Home;
+    RecyclerView rv_trending_home,rv_FruitTop_Home,rv_MeatTop_Home,rv_FoodTop_Home;
 
     ImageView arrow1,arrow2,arrow3,arrow4;
     private ProductFragment fragment = new ProductFragment();
@@ -100,39 +100,39 @@ public class HomePageFragment extends Fragment {
         arrow3 = view.findViewById(R.id.arrow3);
         arrow4 = view.findViewById(R.id.arrow4);
 
-        card_vegetable_home = view.findViewById(R.id.card_vegetable_home);
-        card_fruit_home = view.findViewById(R.id.card_fruit_home);
-        card_meat_home = view.findViewById(R.id.card_meat_home);
-        card_food_home = view.findViewById(R.id.card_food_home);
+        card_vanhoc_home = view.findViewById(R.id.card_vanhoc_home);
+        card_kinhte_home = view.findViewById(R.id.card_kinhte_home);
+        card_tamly_home = view.findViewById(R.id.card_tamly_home);
+        card_giaoduc_home = view.findViewById(R.id.card_giaoduc_home);
 
-        card_Top_Vegetable = view.findViewById(R.id.card_Top_Vegetable);
+        card_trending_home = view.findViewById(R.id.card_trending_home);
         card_Top_Fruit = view.findViewById(R.id.card_Top_Fruit);
         card_Top_Meat = view.findViewById(R.id.card_Top_Meat);
         card_Top_Food = view.findViewById(R.id.card_Top_Food);
 
-        rv_VegetableTop_Home = view.findViewById(R.id.rv_VegetableTop_Home);
+        rv_trending_home = view.findViewById(R.id.rv_trending_home);
         rv_FruitTop_Home = view.findViewById(R.id.rv_FruitTop_Home);
         rv_MeatTop_Home = view.findViewById(R.id.rv_MeatTop_Home);
         rv_FoodTop_Home = view.findViewById(R.id.rv_FoodTop_Home);
-        card_vegetable_home.setOnClickListener(view1 -> {
+        card_vanhoc_home.setOnClickListener(view1 -> {
             fragmentManager.beginTransaction().replace(R.id.frame_Home, new VegetableFragment(),null).addToBackStack(null).commit();
 
         });
-        card_fruit_home.setOnClickListener(view1 -> {
+        card_kinhte_home.setOnClickListener(view1 -> {
             fragmentManager.beginTransaction().replace(R.id.frame_Home, new FruitFragment(),null).addToBackStack(null).commit();
         });
-        card_meat_home.setOnClickListener(view1 -> {
+        card_tamly_home.setOnClickListener(view1 -> {
 
             fragmentManager.beginTransaction().replace(R.id.frame_Home, new MeatFragment(),null).addToBackStack(null).commit();
         });
-        card_food_home.setOnClickListener(view1 -> {
+        card_giaoduc_home.setOnClickListener(view1 -> {
 
             fragmentManager.beginTransaction().replace(R.id.frame_Home, new PartnerFoodFragment(),null).addToBackStack(null).commit();
         });
 
 
-        card_Top_Vegetable.setOnClickListener(view1 -> {
-            onClickItemCart(listVegetable,rv_VegetableTop_Home);
+        card_trending_home.setOnClickListener(view1 -> {
+            onClickItemCart(listVegetable,rv_trending_home);
         });
         card_Top_Fruit.setOnClickListener(view1 -> {
             onClickItemCart(listFruit,rv_FruitTop_Home);
