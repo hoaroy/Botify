@@ -18,11 +18,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.example.thucphamxanh2.Adapter.ImageSliderAdapter;
 import com.example.thucphamxanh2.Adapter.ProductAdapter;
 import com.example.thucphamxanh2.Fragment.ProductFragments.FruitFragment;
 import com.example.thucphamxanh2.Fragment.ProductFragments.MeatFragment;
 import com.example.thucphamxanh2.Fragment.ProductFragments.ProductFragment;
 import com.example.thucphamxanh2.Fragment.ProductFragments.VegetableFragment;
+import com.example.thucphamxanh2.Model.ImageSlider;
 import com.example.thucphamxanh2.Model.Product;
 import com.example.thucphamxanh2.Model.ProductTop;
 import com.example.thucphamxanh2.R;
@@ -36,6 +38,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import androidx.viewpager.widget.ViewPager;
+import me.relex.circleindicator.CircleIndicator;
 
 
 public class HomePageFragment extends Fragment {
@@ -60,12 +64,31 @@ public class HomePageFragment extends Fragment {
     ImageView arrow1,arrow2,arrow3,arrow4;
     private ProductFragment fragment = new ProductFragment();
 
+    ///imgview
+    private List<ImageSlider> list = new ArrayList<>();
+    private ViewPager viewPager;
+    private ImageSliderAdapter imageSliderAdapter;
+    private CircleIndicator circleIndicator;
+
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home_page, container, false);
+        //viewslider
+        viewPager = view.findViewById(R.id.main_slider_image);
+        circleIndicator = view.findViewById(R.id.circle_indicator);
+
+        list.add(new ImageSlider(R.drawable.banner_0803));
+        list.add(new ImageSlider(R.drawable.banner_book));
+        list.add(new ImageSlider(R.drawable.banner_kim_dong));
+        list.add(new ImageSlider(R.drawable.banner_fahasa));
+
+        imageSliderAdapter = new ImageSliderAdapter(getContext(), list);
+        viewPager.setAdapter(imageSliderAdapter);
+        circleIndicator.setViewPager(viewPager);
+
         adapter = new ProductAdapter(listVegetable,fragment,getContext());
         getTopProduct();
         getProduct();

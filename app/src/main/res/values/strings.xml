@@ -66,5 +66,7 @@
     <string name="mo_ta_text">Thông tin sản phẩm</string>
     <string name="nha_cung_cap_text">Nhà cung cấp</string>
     <string name="tac_gia_text">Tác giả</string>
+    <string name="slider">slider</string>
+    <string name="kinh_t">Kinh tế</string>
 
 </resources>
