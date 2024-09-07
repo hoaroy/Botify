@@ -44,17 +44,17 @@
     <string name="trangChu">Trang chủ</string>
     <string name="caNhan">Cá nhân</string>
     <string name="rau_c">Rau, củ</string>
-    <string name="hoa_qu">Hoa quả</string>
-    <string name="th_t">Thịt</string>
+    <string name="hoa_qu">Kinh tế</string>
+    <string name="th_t">Tâm lý</string>
     <string name="n">Đồ ăn</string>
-    <string name="nh_ng_lo_i_rau_c_mua_nhi_u_nh_t">Những loại rau củ mua nhiều nhất</string>
+    <string name="nh_ng_lo_i_rau_c_mua_nhi_u_nh_t">Những loại Văn học mua nhiều nhất</string>
     <string name="search_bar">Tìm kiếm tên sách, tên tác giả ...</string>
     <string name="test_text">Test</string>
     <string name="trending_text">Thịnh Hành</string>
     <string name="new_text">Sách Mới</string>
     <string name="van_hoc_text">Văn học</string>
     <string name="kinh_te_text">Kinh tế</string>
-    <string name="tam_ly_ky_nang_song_text">Tâm lý</string>
+    <string name="tam_ly_ky_nang_song_text">Kinh tế</string>
 
     <string name="sach_thieu_nhi_text">Thiếu nhi</string>
     <string name="tieu_su_hoi_ky_text">Hồi ký</string>

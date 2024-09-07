@@ -6,9 +6,9 @@
     android:layout_height="match_parent"
     android:background="#D3E6CC"
     android:padding="10dp"
-    tools:context=".Fragment.ProductFragments.VegetableFragment">
+    tools:context=".Fragment.ProductFragments.VanhocFragment">
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvVegetable"
+        android:id="@+id/rvVanhoc"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

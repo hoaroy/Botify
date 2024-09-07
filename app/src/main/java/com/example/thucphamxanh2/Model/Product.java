@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class Product {
     private int codeProduct,codeCategory,priceProduct;
-    private String nameProduct,imgProduct,userPartner;
+        private String nameProduct,imgProduct,userPartner;
 
     public Product() {
     }

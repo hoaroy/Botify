@@ -20,10 +20,10 @@ import android.widget.ImageView;
 
 import com.example.thucphamxanh2.Adapter.ImageSliderAdapter;
 import com.example.thucphamxanh2.Adapter.ProductAdapter;
-import com.example.thucphamxanh2.Fragment.ProductFragments.FruitFragment;
-import com.example.thucphamxanh2.Fragment.ProductFragments.MeatFragment;
+import com.example.thucphamxanh2.Fragment.ProductFragments.KinhteFragment;
+import com.example.thucphamxanh2.Fragment.ProductFragments.TamlyFragment;
 import com.example.thucphamxanh2.Fragment.ProductFragments.ProductFragment;
-import com.example.thucphamxanh2.Fragment.ProductFragments.VegetableFragment;
+import com.example.thucphamxanh2.Fragment.ProductFragments.VanhocFragment;
 import com.example.thucphamxanh2.Model.ImageSlider;
 import com.example.thucphamxanh2.Model.Product;
 import com.example.thucphamxanh2.Model.ProductTop;
@@ -44,13 +44,13 @@ import me.relex.circleindicator.CircleIndicator;
 
 public class HomePageFragment extends Fragment {
 
-    private List<ProductTop> productTopListVegetable = new ArrayList<>();
-    private List<ProductTop> productTopListMeat= new ArrayList<>();
-    private List<ProductTop> productTopListFruit= new ArrayList<>();
+    private List<ProductTop> productToplistVanhoc = new ArrayList<>();
+    private List<ProductTop> productToplistTamly= new ArrayList<>();
+    private List<ProductTop> productToplistKinhte= new ArrayList<>();
     private List<ProductTop> productTopListFood= new ArrayList<>();
-    private List<Product> listVegetable = new ArrayList<>();
-    private List<Product> listMeat= new ArrayList<>();
-    private List<Product> listFruit= new ArrayList<>();
+    private List<Product> listVanhoc = new ArrayList<>();
+    private List<Product> listTamly= new ArrayList<>();
+    private List<Product> listKinhte= new ArrayList<>();
     private List<Product> listFood= new ArrayList<>();
     private List<Product> listProduct = new ArrayList<>();
     ProductAdapter adapter;
@@ -89,7 +89,7 @@ public class HomePageFragment extends Fragment {
         viewPager.setAdapter(imageSliderAdapter);
         circleIndicator.setViewPager(viewPager);
 
-        adapter = new ProductAdapter(listVegetable,fragment,getContext());
+        adapter = new ProductAdapter(listVanhoc,fragment,getContext());
         getTopProduct();
         getProduct();
 
@@ -115,15 +115,15 @@ public class HomePageFragment extends Fragment {
         rv_MeatTop_Home = view.findViewById(R.id.rv_MeatTop_Home);
         rv_FoodTop_Home = view.findViewById(R.id.rv_FoodTop_Home);
         card_vanhoc_home.setOnClickListener(view1 -> {
-            fragmentManager.beginTransaction().replace(R.id.frame_Home, new VegetableFragment(),null).addToBackStack(null).commit();
+            fragmentManager.beginTransaction().replace(R.id.frame_Home, new VanhocFragment(),null).addToBackStack(null).commit();
 
         });
         card_kinhte_home.setOnClickListener(view1 -> {
-            fragmentManager.beginTransaction().replace(R.id.frame_Home, new FruitFragment(),null).addToBackStack(null).commit();
+            fragmentManager.beginTransaction().replace(R.id.frame_Home, new KinhteFragment(),null).addToBackStack(null).commit();
         });
         card_tamly_home.setOnClickListener(view1 -> {
 
-            fragmentManager.beginTransaction().replace(R.id.frame_Home, new MeatFragment(),null).addToBackStack(null).commit();
+            fragmentManager.beginTransaction().replace(R.id.frame_Home, new TamlyFragment(),null).addToBackStack(null).commit();
         });
         card_giaoduc_home.setOnClickListener(view1 -> {
 
@@ -132,13 +132,13 @@ public class HomePageFragment extends Fragment {
 
 
         card_trending_home.setOnClickListener(view1 -> {
-            onClickItemCart(listVegetable,rv_trending_home);
+            onClickItemCart(listVanhoc,rv_trending_home);
         });
         card_Top_Fruit.setOnClickListener(view1 -> {
-            onClickItemCart(listFruit,rv_FruitTop_Home);
+            onClickItemCart(listKinhte,rv_FruitTop_Home);
         });
         card_Top_Meat.setOnClickListener(view1 -> {
-            onClickItemCart(listMeat,rv_MeatTop_Home);
+            onClickItemCart(listTamly,rv_MeatTop_Home);
         });
         card_Top_Food.setOnClickListener(view1 -> {
 
@@ -156,19 +156,19 @@ public class HomePageFragment extends Fragment {
             reference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
-                   productTopListVegetable.clear();
+                   productToplistVanhoc.clear();
                     productTopListFood.clear();
-                    productTopListFruit.clear();
-                    productTopListMeat.clear();
+                    productToplistKinhte.clear();
+                    productToplistTamly.clear();
 
                     for (DataSnapshot snapshot1 : snapshot.getChildren()){
                         ProductTop top = snapshot1.getValue(ProductTop.class);
                         if (top.getIdCategory()==1){
-                            productTopListVegetable.add(top);
+                            productToplistVanhoc.add(top);
                         }else  if (top.getIdCategory()==2){
-                            productTopListFruit.add(top);
+                            productToplistKinhte.add(top);
                         }else  if (top.getIdCategory()==3){
-                            productTopListMeat.add(top);
+                            productToplistTamly.add(top);
                         }else {productTopListFood.add(top);
                         }
                     }
@@ -188,9 +188,9 @@ public class HomePageFragment extends Fragment {
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                listMeat.clear();
-                listFruit.clear();
-                listVegetable.clear();
+                listTamly.clear();
+                listKinhte.clear();
+                listVanhoc.clear();
                 listFood.clear();
 
                 for (DataSnapshot snapshot1 : snapshot.getChildren()){
@@ -198,19 +198,19 @@ public class HomePageFragment extends Fragment {
                         listProduct.add(top);
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    Collections.sort(productTopListVegetable,Comparator.comparing(ProductTop::getAmountProduct).reversed());
-                    Collections.sort(productTopListFruit,Comparator.comparing(ProductTop::getAmountProduct).reversed());
+                    Collections.sort(productToplistVanhoc,Comparator.comparing(ProductTop::getAmountProduct).reversed());
+                    Collections.sort(productToplistKinhte,Comparator.comparing(ProductTop::getAmountProduct).reversed());
                     Collections.sort(productTopListFood,Comparator.comparing(ProductTop::getAmountProduct).reversed());
-                    Collections.sort(productTopListMeat,Comparator.comparing(ProductTop::getAmountProduct).reversed());
+                    Collections.sort(productToplistTamly,Comparator.comparing(ProductTop::getAmountProduct).reversed());
                 }
-                add(productTopListVegetable,listProduct,listVegetable);
-                add(productTopListFruit,listProduct,listFruit);
+                add(productToplistVanhoc,listProduct,listVanhoc);
+                add(productToplistKinhte,listProduct,listKinhte);
                 add(productTopListFood,listProduct,listFood);
-                add(productTopListMeat,listProduct,listMeat);
-                collections(listVegetable);
-                collections(listFruit);
+                add(productToplistTamly,listProduct,listTamly);
+                collections(listVanhoc);
+                collections(listKinhte);
                 collections(listFood);
-                collections(listMeat);
+                collections(listTamly);
                 adapter.notifyDataSetChanged();
             }
             @Override

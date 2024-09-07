@@ -5,9 +5,9 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.example.thucphamxanh2.Fragment.ProductFragments.FoodFragment;
-import com.example.thucphamxanh2.Fragment.ProductFragments.FruitFragment;
-import com.example.thucphamxanh2.Fragment.ProductFragments.MeatFragment;
-import com.example.thucphamxanh2.Fragment.ProductFragments.VegetableFragment;
+import com.example.thucphamxanh2.Fragment.ProductFragments.KinhteFragment;
+import com.example.thucphamxanh2.Fragment.ProductFragments.TamlyFragment;
+import com.example.thucphamxanh2.Fragment.ProductFragments.VanhocFragment;
 
 public class ProductAdapter_tabLayout extends FragmentStateAdapter {
     public ProductAdapter_tabLayout(@NonNull Fragment fragment) {
@@ -18,9 +18,9 @@ public class ProductAdapter_tabLayout extends FragmentStateAdapter {
     @Override
     public Fragment createFragment(int position) {
         switch (position){
-            case 0: return new VegetableFragment();
-            case 1: return new FruitFragment();
-            case 2: return new MeatFragment();
+            case 0: return new VanhocFragment();
+            case 1: return new KinhteFragment();
+            case 2: return new TamlyFragment();
             default: return new FoodFragment();
         }
     }

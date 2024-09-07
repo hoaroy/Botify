@@ -29,10 +29,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class VegetableFragment extends Fragment {
+public class VanhocFragment extends Fragment {
 
-    private List<Product> listVegetable;
-    private RecyclerView rvVegetable;
+    private List<Product> listVanhoc;
+    private RecyclerView rvVanhoc;
     private LinearLayoutManager linearLayoutManager;
     private ProductAdapter adapter;
     private View view;
@@ -46,16 +46,16 @@ public class VegetableFragment extends Fragment {
         return view;
     }
     public void unitUI(){
-        listVegetable = getVegetableProduct();
-        rvVegetable = view.findViewById(R.id.rvVegetable);
+        listVanhoc = getVanhocProduct();
+        rvVanhoc = view.findViewById(R.id.rvVanhoc);
         linearLayoutManager = new LinearLayoutManager(getContext());
-        rvVegetable.setLayoutManager(linearLayoutManager);
-        adapter = new ProductAdapter(listVegetable,fragment,getContext());
-        rvVegetable.setAdapter(adapter);
-        rvVegetable.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        rvVanhoc.setLayoutManager(linearLayoutManager);
+        adapter = new ProductAdapter(listVanhoc,fragment,getContext());
+        rvVanhoc.setAdapter(adapter);
+        rvVanhoc.setLayoutManager(new GridLayoutManager(getContext(), 2));
     }
 
-    public  List<Product> getVegetableProduct(){
+    public  List<Product> getVanhocProduct(){
         ProgressDialog progressDialog = new ProgressDialog(requireContext());
         progressDialog.setMessage("Vui lòng đợi ...");
         progressDialog.setCanceledOnTouchOutside(false);

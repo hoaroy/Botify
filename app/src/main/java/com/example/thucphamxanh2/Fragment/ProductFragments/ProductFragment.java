@@ -64,7 +64,7 @@ public class ProductFragment extends Fragment {
     private int codeCategory;
     private Button btn_addVegetable,btn_cancleVegetable;
     private Spinner sp_nameCategory;
-    private String[] arr = {"Rau củ","Hoa quả","Thịt"};
+    private String[] arr = {"Văn học","Kinh tế","Kinh tế"};
     private ArrayAdapter<String> adapterSpiner;
     private SharedPreferences sharedPreferences;
 
@@ -93,13 +93,13 @@ public class ProductFragment extends Fragment {
             @Override
             public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
                 switch (position){
-                    case 0: tab.setText("Rau củ");
+                    case 0: tab.setText("Văn học");
                         break;
-                    case 1: tab.setText("Hoa quả");
+                    case 1: tab.setText("Kinh tế");
                         break;
-                    case 2:tab.setText("Thịt");
+                    case 2:tab.setText("Kinh tế");
                         break;
-                    case 3:tab.setText("Đồ ăn ");
+                    case 3:tab.setText("Giáo dục ");
                         break;
                 }
             }
@@ -203,11 +203,11 @@ public class ProductFragment extends Fragment {
         userPartner = sharedPreferences.getString("username","");
 
                 String category = sp_nameCategory.getSelectedItem().toString();
-                if (category.equals("Rau củ")){
+                if (category.equals("Văn học")){
                     codeCategory = 1;
-                }else if (category.equals("Hoa quả")){
+                }else if (category.equals("Kinh tế")){
                     codeCategory = 2;
-                }else  if (category.equals("Thịt")){
+                }else  if (category.equals("Tâm lý")){
                     codeCategory = 3;
                 }
         priceProduct = til_priceProduct.getEditText().getText().toString();

@@ -480,7 +480,7 @@
                             <TextView
                                 android:layout_width="330dp"
                                 android:layout_height="wrap_content"
-                                android:text="Những loại thịt mua nhiều nhất"
+                                android:text="Những loại Tâm lý mua nhiều nhất"
                                 android:textColor="@color/white"
                                 android:textSize="20dp"
                                 android:textStyle="bold" />

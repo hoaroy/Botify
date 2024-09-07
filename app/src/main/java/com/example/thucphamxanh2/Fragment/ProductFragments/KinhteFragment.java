@@ -26,10 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class FruitFragment extends Fragment {
+public class KinhteFragment extends Fragment {
 
-    private List<Product> listFruit = new ArrayList<>();
-    private RecyclerView rvFruit;
+    private List<Product> listKinhte = new ArrayList<>();
+    private RecyclerView rvKinhte;
     private LinearLayoutManager linearLayoutManager;
     private ProductAdapter adapter;
     private View view;
@@ -44,16 +44,16 @@ public class FruitFragment extends Fragment {
         return view;
     }
     public void unitUI(){
-        getVegetableProducts();
-        rvFruit = view.findViewById(R.id.rvFruit);
+        getVanhocProducts();
+        rvKinhte = view.findViewById(R.id.rvKinhte);
         linearLayoutManager = new LinearLayoutManager(getContext());
-        rvFruit.setLayoutManager(linearLayoutManager);
-        adapter = new ProductAdapter(listFruit,fragment,getContext());
-        rvFruit.setAdapter(adapter);
-        rvFruit.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        rvKinhte.setLayoutManager(linearLayoutManager);
+        adapter = new ProductAdapter(listKinhte,fragment,getContext());
+        rvKinhte.setAdapter(adapter);
+        rvKinhte.setLayoutManager(new GridLayoutManager(getContext(), 2));
     }
 
-    public void getVegetableProducts(){
+    public void getVanhocProducts(){
         ProgressDialog progressDialog = new ProgressDialog(requireContext());
         progressDialog.setMessage("Vui lòng đợi ...");
         progressDialog.setCanceledOnTouchOutside(false);
@@ -64,11 +64,11 @@ public class FruitFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 progressDialog.dismiss();
-                listFruit.clear();
+                listKinhte.clear();
                 for(DataSnapshot snap : snapshot.getChildren()){
                     Product product = snap.getValue(Product.class);
                     if (product.getCodeCategory()==2){
-                        listFruit.add(product);
+                        listKinhte.add(product);
                     }
                 }
                 adapter.notifyDataSetChanged();

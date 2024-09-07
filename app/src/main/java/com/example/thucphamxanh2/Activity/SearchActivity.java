@@ -53,7 +53,7 @@ public class SearchActivity extends AppCompatActivity {
                 return true;
             }
         });
-        getVegetableProduct();
+        getVanhocProduct();
         rvProduct = findViewById(R.id.rvSearch);
         linearLayoutManager = new LinearLayoutManager(getApplicationContext());
         rvProduct.setLayoutManager(linearLayoutManager);
@@ -81,7 +81,7 @@ public class SearchActivity extends AppCompatActivity {
             rvProduct.setAdapter(adapter);
         }
     }
-    public  void getVegetableProduct(){
+    public  void getVanhocProduct(){
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference reference = database.getReference("Product");
         //TODO sửa dialog khi load dữ liệu từ firebase lên fragment

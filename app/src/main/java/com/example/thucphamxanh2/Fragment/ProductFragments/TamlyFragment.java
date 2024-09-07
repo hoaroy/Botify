@@ -25,10 +25,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MeatFragment extends Fragment {
+public class TamlyFragment extends Fragment {
 
-    private List<Product> listMeat;
-    private RecyclerView rvMeat;
+    private List<Product> listTamly;
+    private RecyclerView rvTamly;
+    
     private LinearLayoutManager linearLayoutManager;
     private ProductAdapter adapter;
     private View view;
@@ -44,16 +45,16 @@ public class MeatFragment extends Fragment {
     }
 
     public void initUI(){
-        listMeat = getVegetableProduct();
-        rvMeat = view.findViewById(R.id.rvMeat);
+        listTamly = getVanhocProduct();
+        rvTamly = view.findViewById(R.id.rvTamly);
         linearLayoutManager = new LinearLayoutManager(getContext());
-        rvMeat.setLayoutManager(linearLayoutManager);
-        adapter = new ProductAdapter(listMeat,fragment, getActivity());
-        rvMeat.setAdapter(adapter);
-        rvMeat.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        rvTamly.setLayoutManager(linearLayoutManager);
+        adapter = new ProductAdapter(listTamly,fragment, getActivity());
+        rvTamly.setAdapter(adapter);
+        rvTamly.setLayoutManager(new GridLayoutManager(getContext(), 2));
     }
 
-    public  List<Product> getVegetableProduct(){
+    public  List<Product> getVanhocProduct(){
         ProgressDialog progressDialog = new ProgressDialog(requireContext());
         progressDialog.setMessage("Vui lòng đợi ...");
         progressDialog.setCanceledOnTouchOutside(false);
