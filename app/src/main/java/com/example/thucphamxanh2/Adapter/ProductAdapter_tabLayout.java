@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.example.thucphamxanh2.Fragment.ProductFragments.FoodFragment;
+import com.example.thucphamxanh2.Fragment.ProductFragments.BookFragment;
 import com.example.thucphamxanh2.Fragment.ProductFragments.KinhteFragment;
 import com.example.thucphamxanh2.Fragment.ProductFragments.TamlyFragment;
 import com.example.thucphamxanh2.Fragment.ProductFragments.VanhocFragment;
@@ -21,7 +21,7 @@ public class ProductAdapter_tabLayout extends FragmentStateAdapter {
             case 0: return new VanhocFragment();
             case 1: return new KinhteFragment();
             case 2: return new TamlyFragment();
-            default: return new FoodFragment();
+            default: return new BookFragment();
         }
     }
 

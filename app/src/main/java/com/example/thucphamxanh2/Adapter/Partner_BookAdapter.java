@@ -20,10 +20,10 @@ import com.example.thucphamxanh2.R;
 import java.util.Base64;
 import java.util.List;
 
-public class Partner_FoodAdapter extends RecyclerView.Adapter<Partner_FoodAdapter.ViewHolder> {
+public class Partner_BookAdapter extends RecyclerView.Adapter<Partner_BookAdapter.ViewHolder> {
     private ItemClickListener itemClickListener;
     List<Partner> list;
-    public Partner_FoodAdapter(List<Partner> list,ItemClickListener itemClickListener){
+    public Partner_BookAdapter(List<Partner> list, ItemClickListener itemClickListener){
         this.itemClickListener = itemClickListener;
         this.list=list;
     }

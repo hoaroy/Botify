@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class Food_Of_PartnerFragment extends Fragment {
+public class Book_Of_PartnerFragment extends Fragment {
     RecyclerView food_of_partner_recyclerView;
     LinearLayoutManager linearLayoutManager;
     private List<Product> listProduct = new ArrayList<>();

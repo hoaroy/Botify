@@ -127,7 +127,7 @@ public class HomePageFragment extends Fragment {
         });
         card_giaoduc_home.setOnClickListener(view1 -> {
 
-            fragmentManager.beginTransaction().replace(R.id.frame_Home, new PartnerFoodFragment(),null).addToBackStack(null).commit();
+            fragmentManager.beginTransaction().replace(R.id.frame_Home, new PartnerBookFragment(),null).addToBackStack(null).commit();
         });
 
 

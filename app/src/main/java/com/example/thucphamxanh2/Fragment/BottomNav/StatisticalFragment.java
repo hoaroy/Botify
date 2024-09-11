@@ -40,6 +40,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+//Thong ke
 public class StatisticalFragment extends Fragment {
     private final String TAG = "StatisticalFragment";
     private FragmentStatisticalBinding binding;

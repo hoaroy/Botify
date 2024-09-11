@@ -97,7 +97,7 @@ public class ProductFragment extends Fragment {
                         break;
                     case 1: tab.setText("Kinh tế");
                         break;
-                    case 2:tab.setText("Kinh tế");
+                    case 2:tab.setText("Tâm lý");
                         break;
                     case 3:tab.setText("Giáo dục ");
                         break;

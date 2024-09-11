@@ -50,7 +50,7 @@ import java.util.Base64;
 import java.util.List;
 
 
-public class FoodFragment extends Fragment {
+public class BookFragment extends Fragment {
     private List<Product> listFood;
     private RecyclerView rvFood;
     private LinearLayoutManager linearLayoutManager;

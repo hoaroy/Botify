@@ -40,7 +40,7 @@
         tools:layout="@layout/fragment_partner"/>
     <fragment
         android:id="@+id/nav_Food"
-        android:name="com.example.thucphamxanh2.Fragment.ProductFragments.FoodFragment"
+        android:name="com.example.thucphamxanh2.Fragment.ProductFragments.BookFragment"
         android:label="@string/menu_food"
         tools:layout="@layout/fragment_partner"/>
     <fragment
