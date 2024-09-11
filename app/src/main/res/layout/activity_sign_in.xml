@@ -5,15 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="25dp"
     android:gravity="center"
-    android:background="#daf0d2"
+    android:background="@drawable/loginbkg_1"
     tools:context=".Activity.SignInActivity">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="25dp">
+        android:layout_margin="30dp"
+        app:cardCornerRadius="30dp"
+        app:cardElevation="20dp"
+        android:background="@drawable/custom_edittext">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -22,19 +24,18 @@
             android:padding="20dp"
             android:background="#ffffff">
 
-            <ImageView
-                android:id="@+id/imageView3"
+            <TextView
+                android:id="@+id/loginText"
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
-                app:srcCompat="@drawable/cart_login" />
-
-            <ImageView
-                android:id="@+id/imageView5"
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="25dp"
-                android:layout_marginTop="5dp"
-                app:srcCompat="@drawable/logo_freshmart" />
+                android:text="@string/register"
+                android:textAlignment="center"
+                android:textColor="@color/text_color"
+                android:textSize="36sp"
+                android:textStyle="bold" />
+
+
+
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/form_SignInActivity_email"
@@ -81,7 +82,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="10dp"
                 android:checked="true"
-                android:buttonTint="#7CB342"
+                android:buttonTint="#1449E8"
                 android:text="@string/remember_account"/>
 
             <Button
@@ -89,7 +90,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:backgroundTint="#73DE4E"
+                android:backgroundTint="#0C61F3"
                 android:text="Đăng nhập"/>
             <LinearLayout
                 android:id="@+id/layout_SignInActivity_signIn"

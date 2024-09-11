@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/cardView_partner_food"
+    android:id="@+id/cardView_partner_book"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardCornerRadius="20dp"
@@ -26,7 +26,7 @@
       android:gravity="center"
       android:padding="15dp">
       <ImageView
-          android:id="@+id/imgPartner_food"
+          android:id="@+id/imgPartner_book"
           android:layout_width="100dp"
           android:layout_height="100dp"
           android:layout_marginRight="10dp"/>
@@ -42,7 +42,7 @@
               android:text="Đối tác A"
               android:textColor="#F44336"
               android:layout_gravity="center"
-              android:id="@+id/namePartner_food"
+              android:id="@+id/namePartner_book"
               />
           <TextView
               android:layout_width="wrap_content"
@@ -50,7 +50,7 @@
               android:textSize="16dp"
               android:layout_gravity="center"
               android:text="Đại Mỗ - Nam Từ Liêm-Hà Nội"
-              android:id="@+id/addressPartner_food"
+              android:id="@+id/addressPartner_book"
               />
       </LinearLayout>
   </LinearLayout>

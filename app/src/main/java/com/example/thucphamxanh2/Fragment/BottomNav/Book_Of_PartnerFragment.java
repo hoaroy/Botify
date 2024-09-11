@@ -40,7 +40,7 @@ public class Book_Of_PartnerFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_food__of__partner, container, false);
+        View view = inflater.inflate(R.layout.fragment_book__of__partner, container, false);
         food_of_partner_recyclerView = view.findViewById(R.id.food_of_partner_recyclerView);
 
         listProduct = loadListFood();

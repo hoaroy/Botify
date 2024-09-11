@@ -39,7 +39,7 @@ public class TamlyFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_meat, container, false);
+        view = inflater.inflate(R.layout.fragment_tamly, container, false);
         initUI();
         return view;
     }
