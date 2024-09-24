@@ -36,8 +36,8 @@ public class HomeFragment extends Fragment {
                 case R.id.action_home:
                     replaceFragment(new HomePageFragment());
                     break;
-                case R.id.action_voucher:
-                    replaceFragment(new VoucherFragment());
+                case R.id.action_chat:
+                    replaceFragment(new ChatFragment());
                     break;
                 case R.id.action_order:
                     replaceFragment(new OrderFragment());

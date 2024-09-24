@@ -6,8 +6,8 @@
         android:title="@string/trangChu"
         />
     <item
-        android:id="@+id/action_voucher"
-        android:icon="@drawable/voucher"
+        android:id="@+id/action_chat"
+        android:icon="@drawable/children_book"
         android:title="@string/uuDai"
         />
     <item

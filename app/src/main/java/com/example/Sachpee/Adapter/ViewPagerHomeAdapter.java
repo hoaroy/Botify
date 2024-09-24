@@ -8,7 +8,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import com.example.Sachpee.Fragment.BottomNav.HomePageFragment;
 import com.example.Sachpee.Fragment.Bill.OrderFragment;
 import com.example.Sachpee.Fragment.BottomNav.PersonalFragment;
-import com.example.Sachpee.Fragment.BottomNav.VoucherFragment;
+import com.example.Sachpee.Fragment.BottomNav.ChatFragment;
 
 public class ViewPagerHomeAdapter extends FragmentStatePagerAdapter {
     public ViewPagerHomeAdapter(@NonNull FragmentManager fm, int behavior) {
@@ -20,7 +20,7 @@ public class ViewPagerHomeAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int position) {
         switch (position){
             case 1:
-                return new VoucherFragment();
+                return new ChatFragment();
             case 2:
                 return new OrderFragment();
             default:

@@ -43,7 +43,7 @@
                     android:textColor="@color/black"
                     android:textSize="18dp"
                     android:gravity="center"
-                    android:text="rau muong"
+                    android:text="name book"
                     android:textStyle="bold|italic" />
 
                 <TextView

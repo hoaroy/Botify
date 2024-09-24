@@ -14,7 +14,7 @@
             android:icon="@drawable/ic_baseline_shopping_basket_24"
             android:title="@string/menu_Product" />
         <item
-            android:id="@+id/nav_Food"
+            android:id="@+id/nav_F"
             android:icon="@drawable/ic_baseline_shopping_basket_24"
             android:title="@string/menu_food" />
         <item

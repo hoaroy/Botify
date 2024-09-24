@@ -58,9 +58,17 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.bson.Document;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.realm.Realm;
+import io.realm.mongodb.App;
+import io.realm.mongodb.mongo.MongoClient;
+import io.realm.mongodb.mongo.MongoCollection;
+import io.realm.mongodb.mongo.MongoDatabase;
 
 
 public class MainActivity extends AppCompatActivity{
@@ -83,11 +91,14 @@ public class MainActivity extends AppCompatActivity{
     private ProfileViewModel profileViewModel;
     private List<Bill> listBill = new ArrayList<>();
 
+
+
     ConnectionReceiver connectionReceiver = new ConnectionReceiver();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Realm.init(this);
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -106,7 +117,7 @@ public class MainActivity extends AppCompatActivity{
                 R.id.nav_Product,
                 R.id.nav_Bill,
                 R.id.nav_Partner,
-                R.id.nav_Food)
+                R.id.nav_F)
                 .setOpenableLayout(mDrawerLayout)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
@@ -169,7 +180,7 @@ public class MainActivity extends AppCompatActivity{
         if (userRule.equals("admin")){
             Log.d(TAG, "checkUser: admin");
             mNavigationView.setVisibility(View.VISIBLE);
-            mNavigationView.getMenu().findItem(R.id.nav_Food).setVisible(false);
+            mNavigationView.getMenu().findItem(R.id.nav_F).setVisible(false);
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
         } else if (userRule.equals("partner")) {
             Log.d(TAG, "checkUser: partner");
@@ -254,13 +265,6 @@ public class MainActivity extends AppCompatActivity{
                 });
     }
 
-//    @Deprecated
-//    private void initReferent() {
-//        user = new User();
-//        userAuth = FirebaseAuth.getInstance().getCurrentUser();
-//        mDatabase = FirebaseDatabase.getInstance().getReference();
-//    }
-
     @Deprecated
     private void setUserViewModelObserver() {
         final Observer<User> userObserver = new Observer<User>() {
@@ -298,46 +302,6 @@ public class MainActivity extends AppCompatActivity{
         tvUserName = mNavigationView.getHeaderView(0).findViewById(R.id.tv_MainActivity_username);
         tvUserEmail = mNavigationView.getHeaderView(0).findViewById(R.id.tv_MainActivity_userEmail);
     }
-//    public void showUserInformation() {
-//        SharedPreferences sharedPreferences = getSharedPreferences("My_User",MODE_PRIVATE);
-//        String userPhoneNumber = sharedPreferences.getString("username","");
-//        loadUserInfoById(userPhoneNumber);
-//    }
-//    @Deprecated
-//    private void loadUserInfo() {
-//        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-//        mDatabase.child("users")
-//                .child(firebaseUser.getUid())
-//                .get()
-//                .addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<DataSnapshot> task) {
-//                        if (task.isSuccessful()) {
-//                            Log.d(TAG, "onComplete: task " + String.valueOf(task.getResult()));
-//                            DataSnapshot dataSnapshot = task.getResult();
-//                            user = dataSnapshot.getValue(User.class);
-//                            tvUserEmail.setText(user.getEmail());
-//                            tvUserName.setText(user.getName());
-//                            tvUserName.setVisibility(View.VISIBLE);
-//                            Glide.with(MainActivity.this)
-//                                    .load(user.getStrUriAvatar())
-//                                    .error(R.drawable.ic_avatar_default)
-//                                    .signature(new ObjectKey(Long.toString(System.currentTimeMillis())))
-//                                    .into(ivAvatar);
-//                            profileViewModel.setUser(user);
-//                            Log.i(TAG, "onComplete: info user load from storage: " + user);
-//                        } else {
-//                            Log.e(TAG, "onComplete: ", task.getException());
-//                        }
-//                    }
-//                }).addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//                        Log.e(TAG, "onFailure: ", e);
-//                }
-//        });
-//        Log.d(TAG, "loadUserInfo: " + user.toString());
-//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
