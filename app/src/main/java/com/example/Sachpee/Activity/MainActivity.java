@@ -49,6 +49,8 @@ import com.example.Sachpee.Model.Cart;
 import com.example.Sachpee.Model.Partner;
 import com.example.Sachpee.Model.User;
 import com.example.Sachpee.R;
+import com.example.Sachpee.Service.ApiClient;
+import com.example.Sachpee.Service.ApiService;
 import com.example.Sachpee.Service.ConnectionReceiver;
 import com.example.Sachpee.databinding.ActivityMainBinding;
 import com.google.android.material.navigation.NavigationView;
@@ -58,17 +60,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import org.bson.Document;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.realm.Realm;
-import io.realm.mongodb.App;
-import io.realm.mongodb.mongo.MongoClient;
-import io.realm.mongodb.mongo.MongoCollection;
-import io.realm.mongodb.mongo.MongoDatabase;
+import retrofit2.Call;
+
+import retrofit2.Callback;
+import retrofit2.Response;
+
 
 
 public class MainActivity extends AppCompatActivity{
@@ -92,13 +92,12 @@ public class MainActivity extends AppCompatActivity{
     private List<Bill> listBill = new ArrayList<>();
 
 
-
     ConnectionReceiver connectionReceiver = new ConnectionReceiver();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Realm.init(this);
+
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -126,27 +125,37 @@ public class MainActivity extends AppCompatActivity{
 
 
     }
-    public void loadUserInfoById(String phoneNumber){
-        Log.d(TAG, "loadUserInfoById: ");
+    public void loadUserInfoById(String phoneNumber) {
         Log.d(TAG, "loadUserInfoById: " + phoneNumber);
-        final DatabaseReference rootReference = FirebaseDatabase.getInstance().getReference();
-        rootReference.child("User").child(phoneNumber)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        Log.d(TAG, "onDataChange: ");
-                        if (snapshot.exists()) {
-                            MainActivity.this.user = snapshot.getValue(User.class);
-                            Log.d(TAG, "onDataChange: " + user);
-                            profileViewModel.setUser(user);
-                        }
+
+        // Khởi tạo Retrofit
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        // Gọi API để lấy thông tin người dùng
+        Call<User> call = apiService.getUserByPhoneNumber(phoneNumber);
+
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful()) {
+                    User user = response.body();
+                    Log.d(TAG, "onResponse: " + user);
+                    if (user != null) {
+                        MainActivity.this.user = user;
+                        profileViewModel.setUser(user);
                     }
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e(TAG, "onCancelled: ", error.toException());
-                    }
-                });
+                } else {
+                    Log.e(TAG, "onResponse: Failed to get user");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+            }
+        });
     }
+
     //TODO: thử chuyển method sang ProfileFragment
     private final ActivityResultLauncher<Intent> mActivityResultLauncher =
             registerForActivityResult(
