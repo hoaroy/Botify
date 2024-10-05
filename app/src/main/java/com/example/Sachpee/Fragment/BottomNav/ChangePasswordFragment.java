@@ -23,16 +23,21 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.Sachpee.Fragment.Profile.ProfileViewModel;
 import com.example.Sachpee.Model.Partner;
 import com.example.Sachpee.Model.User;
+import com.example.Sachpee.Service.ApiClient;
+import com.example.Sachpee.Service.ApiService;
 import com.example.Sachpee.databinding.FragmentChangePasswordBinding;
 import com.example.Sachpee.utils.Utils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+
 
 import java.util.HashMap;
 import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ChangePasswordFragment extends Fragment {
     private final String TAG = "ChangePasswordFragment";
@@ -81,36 +86,49 @@ public class ChangePasswordFragment extends Fragment {
                 String strOldPass = oldPass.getEditText().getText().toString();
                 String strNewPass = newPass.getEditText().getText().toString();
                 String strConfirmPass = reNewPass.getEditText().getText().toString();
+
+                // Validate thông tin nhập
                 validate(strOldPass, strNewPass, strConfirmPass, mPartner.getPasswordPartner());
 
+                // Cập nhật mật khẩu mới cho đối tác
                 mPartner.setPasswordPartner(strNewPass);
                 Log.d(TAG, "changePass: change password");
-                DatabaseReference mDatabase;
-                mDatabase = FirebaseDatabase.getInstance().getReference();
-                Map<String, Object> partnerValue = mPartner.toMap();
-                Map<String, Object> partnerUpdateValue = new HashMap<>();
-                partnerUpdateValue.put("/Partner/" + mPartner.getIdPartner(), partnerValue);
-                mDatabase.updateChildren(partnerUpdateValue).addOnCompleteListener(new OnCompleteListener<Void>() {
+
+                // Tạo đối tượng ApiService và gọi API để cập nhật mật khẩu đối tác
+                ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+                Call<Void> call = apiService.updatePartnerPassword(mPartner.getIdPartner(), mPartner);
+
+                // Thực hiện gọi API
+                call.enqueue(new Callback<Void>() {
                     @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        Log.d(TAG, "onComplete: Đổi mật khẩu đối tác thành công");
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            Log.d(TAG, "onComplete: Đổi mật khẩu đối tác thành công");
+                            progressDialog.dismiss();
+                            oldPass.getEditText().setText("");
+                            newPass.getEditText().setText("");
+                            reNewPass.getEditText().setText("");
+                            mProfileFragment.setPartner(mPartner);
+                            Toast.makeText(requireContext(), "Đổi mật khẩu thành công", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e(TAG, "onResponse: Lỗi phản hồi API " + response.code());
+                            progressDialog.dismiss();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Log.e(TAG, "onFailure: Lỗi khi gọi API " + t.getMessage());
                         progressDialog.dismiss();
-                        oldPass.getEditText().setText("");
-                        newPass.getEditText().setText("");
-                        reNewPass.getEditText().setText("");
-                        mPartner.setPasswordPartner(strNewPass);
-                        mProfileFragment.setPartner(mPartner);
-                        Toast.makeText(requireContext(), "Đổi mật khẩu thành công", Toast.LENGTH_SHORT).show();
                     }
                 });
 
-
             } catch (NullPointerException e) {
                 progressDialog.dismiss();
-                    if (e.getMessage().equals(FIELDS_EMPTY)) {
+                if (e.getMessage().equals(FIELDS_EMPTY)) {
                     setErrorEmpty();
                 } else {
-                    Log.e(TAG, "signUp: ", e);
+                    Log.e(TAG, "changePasswordPartner: ", e);
                 }
             } catch (IllegalArgumentException e) {
                 progressDialog.dismiss();
@@ -123,14 +141,15 @@ public class ChangePasswordFragment extends Fragment {
                 } else if (e.getMessage().equals(PASSWORD_INVALID_3)) {
                     oldPass.setError("Mật khẩu cũ không đúng");
                 } else {
-                    Log.e(TAG, "signUp: ", e);
+                    Log.e(TAG, "changePasswordPartner: ", e);
                 }
             } catch (Exception e) {
                 progressDialog.dismiss();
-                Log.e(TAG, "signUp: ", e);
+                Log.e(TAG, "changePasswordPartner: ", e);
             }
         });
     }
+
 
     private void changePasswordUser() {
         oldPass.setErrorEnabled(true);
@@ -144,24 +163,35 @@ public class ChangePasswordFragment extends Fragment {
                 String strOldPass = oldPass.getEditText().getText().toString();
                 String strNewPass = newPass.getEditText().getText().toString();
                 String strConfirmPass = reNewPass.getEditText().getText().toString();
+
+                // Validate thông tin mật khẩu nhập vào
                 validate(strOldPass, strNewPass, strConfirmPass, mUser.getPassword());
                 mUser.setPassword(strNewPass);
                 Log.d(TAG, "changePass: change password");
-                DatabaseReference mDatabase;
-                mDatabase = FirebaseDatabase.getInstance().getReference();
-                Map<String, Object> userValue = mUser.toMap();
-                Map<String, Object> userUpdateValue = new HashMap<>();
-                userUpdateValue.put("/User/" + mUser.getId(), userValue);
-                mDatabase.updateChildren(userUpdateValue).addOnCompleteListener(new OnCompleteListener<Void>() {
+
+                // Sử dụng Retrofit để cập nhật mật khẩu mới
+                ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+                Call<Void> call = apiService.updateUserPassword(mUser.getId(), mUser);
+
+                // Thực hiện gọi API
+                call.enqueue(new Callback<Void>() {
                     @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        Log.d(TAG, "onComplete: Đổi mật khẩu user thành công");
-                        oldPass.getEditText().setText("");
-                        newPass.getEditText().setText("");
-                        reNewPass.getEditText().setText("");
-                        mUser.setPassword(strNewPass);
-                        mProfileFragment.setUser(mUser);
-                        Toast.makeText(requireContext(), "Đổi mật khẩu thành công", Toast.LENGTH_SHORT).show();
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            Log.d(TAG, "onComplete: Đổi mật khẩu user thành công");
+                            oldPass.getEditText().setText("");
+                            newPass.getEditText().setText("");
+                            reNewPass.getEditText().setText("");
+                            mProfileFragment.setUser(mUser);
+                            Toast.makeText(requireContext(), "Đổi mật khẩu thành công", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e(TAG, "onResponse: Lỗi phản hồi API " + response.code());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Log.e(TAG, "onFailure: Lỗi khi gọi API " + t.getMessage());
                     }
                 });
 
@@ -169,7 +199,7 @@ public class ChangePasswordFragment extends Fragment {
                 if (e.getMessage().equals(FIELDS_EMPTY)) {
                     setErrorEmpty();
                 } else {
-                    Log.e(TAG, "signUp: ", e);
+                    Log.e(TAG, "changePasswordUser: ", e);
                 }
             } catch (IllegalArgumentException e) {
                 if (e.getMessage().equals(PASSWORD_INVALID)) {
@@ -181,13 +211,14 @@ public class ChangePasswordFragment extends Fragment {
                 } else if (e.getMessage().equals(PASSWORD_INVALID_3)) {
                     oldPass.setError("Mật khẩu cũ không đúng");
                 } else {
-                    Log.e(TAG, "signUp: ", e);
+                    Log.e(TAG, "changePasswordUser: ", e);
                 }
             } catch (Exception e) {
-                Log.e(TAG, "signUp: ", e);
+                Log.e(TAG, "changePasswordUser: ", e);
             }
         });
     }
+
 
     private void setErrorEmpty() {
         if (oldPass.getEditText().getText().toString().isEmpty()) oldPass.setError("Không được để trống");

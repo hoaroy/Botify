@@ -2,6 +2,7 @@ package com.example.Sachpee.Adapter;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +16,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.Sachpee.Fragment.PartnerFragment;
 import com.example.Sachpee.Model.Partner;
 import com.example.Sachpee.R;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.example.Sachpee.Service.ApiClient;
+import com.example.Sachpee.Service.ApiService;
+
 
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class PartnerAdapter extends RecyclerView.Adapter<PartnerAdapter.viewHolder> {
     List<Partner> list;
@@ -105,10 +111,28 @@ public class PartnerAdapter extends RecyclerView.Adapter<PartnerAdapter.viewHold
         alertDialog.show();
     }
 
-    public void deletePartner(Partner partner){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Partner");
-        reference.child(""+partner.getIdPartner()).removeValue();
+    public void deletePartner(Partner partner) {
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        Call<Void> call = apiService.deletePartner(partner.getIdPartner());
+
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.d("BookFragment", "Đã xóa đối tác thành công.");
+                    // Bạn có thể cập nhật giao diện nếu cần
+                } else {
+                    Log.e("BookFragment", "Xóa đối tác thất bại: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e("BookFragment", "Lỗi kết nối: " + t.getMessage());
+            }
+        });
     }
+
 
 }

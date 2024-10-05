@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,11 +28,9 @@ import com.example.Sachpee.Model.ImageSlider;
 import com.example.Sachpee.Model.Product;
 import com.example.Sachpee.Model.ProductTop;
 import com.example.Sachpee.R;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.example.Sachpee.Service.ApiClient;
+import com.example.Sachpee.Service.ApiService;
+  
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +38,9 @@ import java.util.Comparator;
 import java.util.List;
 import androidx.viewpager.widget.ViewPager;
 import me.relex.circleindicator.CircleIndicator;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class HomePageFragment extends Fragment {
@@ -149,76 +151,111 @@ public class HomePageFragment extends Fragment {
         return view;
     }
 
-    public void getTopProduct(){
-            FirebaseDatabase database = FirebaseDatabase.getInstance();
-            DatabaseReference reference = database.getReference("ProductTop");
-            reference.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                   productToplistVanhoc.clear();
+    public void getTopProduct() {
+        // Giả định bạn có ApiService và phương thức getTopProducts() trả về danh sách ProductTop
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        Call<List<ProductTop>> call = apiService.getProductTop();
+        call.enqueue(new Callback<List<ProductTop>>() {
+            @Override
+            public void onResponse(Call<List<ProductTop>> call, Response<List<ProductTop>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    // Xóa sạch danh sách trước khi thêm mới
+                    productToplistVanhoc.clear();
                     productTopListFood.clear();
                     productToplistKinhte.clear();
                     productToplistTamly.clear();
 
-                    for (DataSnapshot snapshot1 : snapshot.getChildren()){
-                        ProductTop top = snapshot1.getValue(ProductTop.class);
-                        if (top.getIdCategory()==1){
+                    // Lặp qua danh sách sản phẩm top nhận được từ API
+                    for (ProductTop top : response.body()) {
+                        // Phân loại sản phẩm theo idCategory
+                        if (top.getIdCategory() == 1) {
                             productToplistVanhoc.add(top);
-                        }else  if (top.getIdCategory()==2){
+                        } else if (top.getIdCategory() == 2) {
                             productToplistKinhte.add(top);
-                        }else  if (top.getIdCategory()==3){
+                        } else if (top.getIdCategory() == 3) {
                             productToplistTamly.add(top);
-                        }else {productTopListFood.add(top);
+                        } else {
+                            productTopListFood.add(top);
                         }
                     }
+
+                    // Gọi hàm getProduct() sau khi hoàn tất việc lọc
                     getProduct();
-
+                    Log.d("getTopProduct", "Sản phẩm văn học: " + productToplistVanhoc.size() +
+                            ", Kinh tế: " + productToplistKinhte.size() +
+                            ", Tâm lý: " + productToplistTamly.size() +
+                            ", Đồ ăn: " + productTopListFood.size());
+                } else {
+                    Log.e("getTopProduct", "Phản hồi không thành công: " + response.code());
                 }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
-    }
-    public void getProduct(){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Product");
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                listTamly.clear();
-                listKinhte.clear();
-                listVanhoc.clear();
-                listFood.clear();
-
-                for (DataSnapshot snapshot1 : snapshot.getChildren()){
-                    Product top = snapshot1.getValue(Product.class);
-                        listProduct.add(top);
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    Collections.sort(productToplistVanhoc,Comparator.comparing(ProductTop::getAmountProduct).reversed());
-                    Collections.sort(productToplistKinhte,Comparator.comparing(ProductTop::getAmountProduct).reversed());
-                    Collections.sort(productTopListFood,Comparator.comparing(ProductTop::getAmountProduct).reversed());
-                    Collections.sort(productToplistTamly,Comparator.comparing(ProductTop::getAmountProduct).reversed());
-                }
-                add(productToplistVanhoc,listProduct,listVanhoc);
-                add(productToplistKinhte,listProduct,listKinhte);
-                add(productTopListFood,listProduct,listFood);
-                add(productToplistTamly,listProduct,listTamly);
-                collections(listVanhoc);
-                collections(listKinhte);
-                collections(listFood);
-                collections(listTamly);
-                adapter.notifyDataSetChanged();
             }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
 
+            @Override
+            public void onFailure(Call<List<ProductTop>> call, Throwable t) {
+                Log.e("getTopProduct", "Lỗi khi gọi API: " + t.getMessage());
             }
         });
     }
-public void add(List<ProductTop> listTop, List<Product> listProduct ,List<Product> listProductTop ){
+
+    public void getProduct() {
+        //  phương thức getAllProducts() trả về danh sách Product
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        Call<List<Product>> call = apiService.getAllProducts();
+        call.enqueue(new Callback<List<Product>>() {
+            @Override
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    // Xóa sạch các danh sách trước khi thêm mới
+                    listTamly.clear();
+                    listKinhte.clear();
+                    listVanhoc.clear();
+                    listFood.clear();
+                    listProduct.clear();  // Làm sạch danh sách product
+
+                    // Lặp qua danh sách sản phẩm nhận được từ API
+                    for (Product top : response.body()) {
+                        listProduct.add(top);
+                    }
+
+                    // Sắp xếp danh sách top sản phẩm nếu SDK >= Android N
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        Collections.sort(productToplistVanhoc, Comparator.comparing(ProductTop::getAmountProduct).reversed());
+                        Collections.sort(productToplistKinhte, Comparator.comparing(ProductTop::getAmountProduct).reversed());
+                        Collections.sort(productTopListFood, Comparator.comparing(ProductTop::getAmountProduct).reversed());
+                        Collections.sort(productToplistTamly, Comparator.comparing(ProductTop::getAmountProduct).reversed());
+                    }
+
+                    // Thêm các sản phẩm vào danh sách tương ứng
+                    add(productToplistVanhoc, listProduct, listVanhoc);
+                    add(productToplistKinhte, listProduct, listKinhte);
+                    add(productTopListFood, listProduct, listFood);
+                    add(productToplistTamly, listProduct, listTamly);
+
+                    // Thực hiện các xử lý bổ sung với các danh sách đã lọc
+                    collections(listVanhoc);
+                    collections(listKinhte);
+                    collections(listFood);
+                    collections(listTamly);
+
+                    // Cập nhật adapter
+                    adapter.notifyDataSetChanged();
+
+                    Log.d("getProduct", "Danh sách sản phẩm đã cập nhật.");
+                } else {
+                    Log.e("getProduct", "Phản hồi không thành công: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                Log.e("getProduct", "Lỗi khi gọi API: " + t.getMessage());
+            }
+        });
+    }
+
+    public void add(List<ProductTop> listTop, List<Product> listProduct ,List<Product> listProductTop ){
     for (int i = 0; i < listTop.size(); i++) {
         for (int j = 0; j < listProduct.size(); j++) {
             if (listTop.get(i).getIdProduct() == listProduct.get(j).getCodeProduct() ){

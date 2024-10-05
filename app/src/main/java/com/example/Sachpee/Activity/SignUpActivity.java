@@ -21,19 +21,20 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.Sachpee.Model.User;
 import com.example.Sachpee.R;
+import com.example.Sachpee.Service.ApiClient;
+import com.example.Sachpee.Service.ApiService;
 import com.example.Sachpee.utils.Utils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.Map;
 import java.util.Objects;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SignUpActivity extends AppCompatActivity implements View.OnClickListener {
     public static final String TAG = "SignUpActivity";
@@ -76,23 +77,25 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void signUp() {
-        final DatabaseReference rootReference = FirebaseDatabase.getInstance().getReference();
+        // Xóa lỗi hiện tại trên các form
         mFormPhoneNumber.setError(null);
         mFormPassword.setError(null);
         mFormConfirmPassword.setError(null);
         mFormUserName.setError(null);
         mFormAddress.setError(null);
+
+        // Lấy dữ liệu từ các form input
         String strPhoneNumber = Objects.requireNonNull(mFormPhoneNumber.getEditText()).getText().toString().trim();
         String strUserName = mFormUserName.getEditText().getText().toString().trim();
         String strPassword = mFormPassword.getEditText().getText().toString().trim();
         String strConfirmPassword = mFormConfirmPassword.getEditText().getText().toString().trim();
         String strAddress = mFormAddress.getEditText().getText().toString().trim();
+
         try {
-            validate(strPhoneNumber,
-                    strUserName,
-                    strPassword,
-                    strConfirmPassword,
-                    strAddress);
+            // Kiểm tra tính hợp lệ của các trường nhập liệu
+            validate(strPhoneNumber, strUserName, strPassword, strConfirmPassword, strAddress);
+
+            // Tạo đối tượng User
             User user = new User();
             user.setPhoneNumber(strPhoneNumber);
             user.setName(strUserName);
@@ -100,63 +103,64 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
             user.setAddress(strAddress);
             user.setStrUriAvatar("");
             user.setId(strPhoneNumber);
+
+            // Hiển thị ProgressDialog
             ProgressDialog progressDialog = Utils.createProgressDiaglog(SignUpActivity.this);
             progressDialog.show();
-            rootReference.child("User").child(strPhoneNumber).addListenerForSingleValueEvent(new ValueEventListener() {
+
+            // Gọi API kiểm tra người dùng đã tồn tại hay chưa và thực hiện đăng ký
+            ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+            Call<User> callCheckUser = apiService.getUserByPhoneNumber(strPhoneNumber);
+
+            callCheckUser.enqueue(new Callback<User>() {
                 @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    if (!snapshot.exists()) {
-                        Map<String, Object> userDataMap = user.toMap();
-                        rootReference.child("User")
-                                .child(strPhoneNumber)
-                                .setValue(user)
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        progressDialog.dismiss();
-                                        Toast.makeText(SignUpActivity.this
-                                                        , "Tạo tài khoản thành công"
-                                                        , Toast.LENGTH_SHORT)
-                                                .show();
-                                        remember(strPhoneNumber,strPassword,"user",strPhoneNumber);
-                                        startActivity(new Intent(getApplicationContext(),MainActivity.class));
-                                        finishAffinity();
-                                    }
-                                })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(SignUpActivity.this
-                                                        , "Tạo tài khoản thất bại"
-                                                        , Toast.LENGTH_LONG)
-                                                .show();
-                                        progressDialog.dismiss();
-                                    }
-                                });
+                public void onResponse(Call<User> call, Response<User> response) {
+                    if (response.isSuccessful() && response.body() == null) {
+                        // Nếu người dùng chưa tồn tại, thực hiện đăng ký
+                        Call<Void> callSignUp = apiService.signUpUser(user);
+                        callSignUp.enqueue(new Callback<Void>() {
+                            @Override
+                            public void onResponse(Call<Void> call, Response<Void> response) {
+                                progressDialog.dismiss();
+                                if (response.isSuccessful()) {
+                                    // Đăng ký thành công, thông báo và chuyển sang MainActivity
+                                    Toast.makeText(SignUpActivity.this, "Tạo tài khoản thành công", Toast.LENGTH_SHORT).show();
+                                    remember(strPhoneNumber, strPassword, "user", strPhoneNumber);
+                                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                                    finishAffinity();
+                                } else {
+                                    Toast.makeText(SignUpActivity.this, "Tạo tài khoản thất bại", Toast.LENGTH_LONG).show();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<Void> call, Throwable t) {
+                                progressDialog.dismiss();
+                                Toast.makeText(SignUpActivity.this, "Có lỗi khi tạo tài khoản", Toast.LENGTH_LONG).show();
+                            }
+                        });
                     } else {
-                        //TODO thông báo số điện thoại đã tồn tại tới view
+                        // Nếu người dùng đã tồn tại, hiển thị lỗi
                         progressDialog.dismiss();
                         mFormPhoneNumber.setError("Số điện thoại đã tồn tại");
                     }
                 }
 
                 @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-                    Toast.makeText(SignUpActivity.this
-                                    , "Có lỗi khi tạo tài khoản, vui lòng thử lại sau"
-                                    , Toast.LENGTH_LONG)
-                            .show();
-                    Log.e(TAG, "onCancelled: ",error.toException() );
+                public void onFailure(Call<User> call, Throwable t) {
+                    progressDialog.dismiss();
+                    Toast.makeText(SignUpActivity.this, "Có lỗi khi kiểm tra tài khoản", Toast.LENGTH_LONG).show();
                 }
             });
         } catch (NullPointerException e) {
+            // Bắt lỗi nếu các trường nhập liệu để trống
             if (e.getMessage().equals(FIELDS_EMPTY)) {
                 setErrorEmpty();
-                //TODO thông báo lỗi khi empty
             } else {
                 Log.e(TAG, "signUp: ", e);
             }
         } catch (IllegalArgumentException e) {
+            // Bắt lỗi các trường không hợp lệ
             if (e.getMessage().equals(NUMBER_PHONE_INVALID)) {
                 mFormPhoneNumber.setError("Số điện thoại không hợp lệ");
             } else if (e.getMessage().equals(PASSWORD_INVALID)) {
@@ -167,89 +171,11 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                 Log.e(TAG, "signUp: ", e);
             }
         } catch (Exception e) {
-            //TODO ngoại lệ gì đó chưa bắt được
+            // Bắt các ngoại lệ khác chưa được xử lý
             Log.e(TAG, "signUp: ", e);
         }
-
-        /*try {
-            validate(strPhoneNumber,
-                    strUserName,
-                    strPassword,
-                    strConfirmPassword,
-                    strAddress);
-            FirebaseAuth auth = FirebaseAuth.getInstance();
-            mProgressDialog.show();
-            auth.createUserWithEmailAndPassword(strPhoneNumber, strPassword)
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            mProgressDialog.dismiss();
-                            if (task.isSuccessful()) {
-                                // Sign in success, update UI with the signed-in user's information
-                                Log.d(TAG, "createUserWithEmail:success");
-                                FirebaseUser userAuth = auth.getCurrentUser();
-                                User user = new User();
-                                user.setEmail(mEtPhoneNumber.getText().toString());
-                                user.setPassword(mEtPassword.getText().toString());
-                                user.setId(userAuth.getUid());
-                                writeNewUser(user);
-                                Intent intent = new Intent(SignUpActivity.this, SignInActivity.class);
-                                //
-                                startActivity(intent);
-                                finishAffinity();
-//                            updateUI(user);
-                            } else {
-                                // If sign in fails, display a message to the user.
-                                Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                                Toast.makeText(SignUpActivity.this, "Authentication failed.",
-                                        Toast.LENGTH_SHORT).show();
-//                            updateUI(null);
-                            }
-                        }
-
-                        private void writeNewUser(User user) {
-                            DatabaseReference databaseReference;
-                            databaseReference = FirebaseDatabase.getInstance().getReference();
-                            databaseReference
-                                    .child("users")
-                                    .child(user.getId())
-                                    .child("id")
-                                    .setValue(user.getId());
-                            databaseReference
-                                    .child("users")
-                                    .child(user.getId())
-                                    .child("email")
-                                    .setValue(user.getEmail());
-                            databaseReference
-                                    .child("users")
-                                    .child(user.getId())
-                                    .child("role")
-                                    .setValue("customer");
-                        }
-                    });
-
-        } catch (NullPointerException e) {
-            if (e.getMessage().equals(FIELDS_EMPTY)) {
-                //TODO thông báo lỗi khi empty
-            } else {
-                Log.e(TAG, "signUp: ", e);
-            }
-        } catch (IllegalArgumentException e) {
-            if (e.getMessage().equals(NUMBER_PHONE_INVALID)) {
-                //TODO thông báo lỗi khi số điện thoại không đúng định dạng
-            } else if (e.getMessage().equals(PASSWORD_INVALID)) {
-                //TODO thông báo lỗi khi mật khẩu không hợp lệ
-            } else if (e.getMessage().equals(PASSWORD_NOT_MATCH)) {
-                //TODO thông báo lỗi số điện thoại không trùng nhau
-            } else {
-                Log.e(TAG, "signUp: ", e);
-            }
-        } catch (Exception e) {
-            //TODO ngoại lệ gì đó chưa bắt được
-            Log.e(TAG, "signUp: ", e);
-        }*/
-
     }
+
 
     private void setErrorEmpty() {
         if (mFormPhoneNumber.getEditText().getText().toString().isEmpty()) {

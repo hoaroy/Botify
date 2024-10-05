@@ -1,6 +1,7 @@
 package com.example.Sachpee.Adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,16 +16,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.Sachpee.Model.Bill;
 import com.example.Sachpee.Model.Cart;
 import com.example.Sachpee.R;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.example.Sachpee.Service.ApiClient;
+import com.example.Sachpee.Service.ApiService;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class StatisticalAdapter extends RecyclerView.Adapter<StatisticalAdapter.ViewHolder> {
     private List<Bill> list;
@@ -96,24 +98,29 @@ public class StatisticalAdapter extends RecyclerView.Adapter<StatisticalAdapter.
     }
     private List<Cart> getAllCart(int i) {
         List<Cart> listCart = new ArrayList<>();
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Bill");
-        reference.child(""+list.get(i).getIdBill()).child("Cart").addValueEventListener(new ValueEventListener() {
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+        Call<List<Cart>> call = apiService.getCartsByBillId(list.get(i).getIdBill());
+
+        call.enqueue(new Callback<List<Cart>>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                listCart.clear();
-                for (DataSnapshot snap : snapshot.getChildren()){
-                    Cart cart = snap.getValue(Cart.class);
-                    listCart.add(cart);
+            public void onResponse(Call<List<Cart>> call, Response<List<Cart>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    listCart.clear();
+                    listCart.addAll(response.body());
+                    adapterItemBill.notifyDataSetChanged();
+                    Log.d("BookFragment", "Cart data retrieved successfully: " + listCart);
+                } else {
+                    Log.e("BookFragment", "Error: " + response.message());
                 }
-                adapterItemBill.notifyDataSetChanged();
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
+            public void onFailure(Call<List<Cart>> call, Throwable t) {
+                Log.e("BookFragment", "Failed to retrieve cart data: " + t.getMessage());
             }
         });
-        return listCart;
+
+        return listCart; // Có thể trả về một danh sách rỗng tại đây
     }
+
 }

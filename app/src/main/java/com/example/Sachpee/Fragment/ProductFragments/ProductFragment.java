@@ -32,16 +32,14 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.Sachpee.Adapter.ProductAdapter_tabLayout;
 import com.example.Sachpee.Model.Product;
 import com.example.Sachpee.R;
+import com.example.Sachpee.Service.ApiClient;
+import com.example.Sachpee.Service.ApiService;
 import com.example.Sachpee.databinding.FragmentProductBinding;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+  
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
 
@@ -49,6 +47,11 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import android.util.Base64;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class ProductFragment extends Fragment {
 
     private FragmentProductBinding binding;
@@ -62,9 +65,9 @@ public class ProductFragment extends Fragment {
     private ImageView img_Product,img_addImageCamera,img_addImageDevice;
     private String nameProduct,imgProduct,userPartner,priceProduct,role;
     private int codeCategory;
-    private Button btn_addVegetable,btn_cancleVegetable;
+    private Button btn_addBook,btn_cancelBook;
     private Spinner sp_nameCategory;
-    private String[] arr = {"Văn học","Kinh tế","Kinh tế"};
+    private String[] arr = {"Văn học","Kinh tế","Tâm lý"};
     private ArrayAdapter<String> adapterSpiner;
     private SharedPreferences sharedPreferences;
 
@@ -129,11 +132,11 @@ public class ProductFragment extends Fragment {
             img_addImageDevice.setOnClickListener(view1 -> {
                 requestPermissionDevice();
             });
-            btn_addVegetable.setOnClickListener(view1 -> {
+            btn_addBook.setOnClickListener(view1 -> {
                 getData(context);
                 validate(0);
             });
-            btn_cancleVegetable.setOnClickListener(view1 -> {
+            btn_cancelBook.setOnClickListener(view1 -> {
                 alertDialog.dismiss();
             });
         }
@@ -142,7 +145,7 @@ public class ProductFragment extends Fragment {
             img_addImageCamera.setVisibility(View.GONE);
 
             img_addImageDevice.setVisibility(View.GONE);
-            btn_addVegetable.setOnClickListener(view1 -> {
+            btn_addBook.setOnClickListener(view1 -> {
                 getData(context);
                 if (validate(1)==1){
                     product.setNameProduct(nameProduct);
@@ -152,7 +155,7 @@ public class ProductFragment extends Fragment {
                 }
                 alertDialog.dismiss();
             });
-            btn_cancleVegetable.setOnClickListener(view1 -> {
+            btn_cancelBook.setOnClickListener(view1 -> {
                 alertDialog.dismiss();
             });
         }
@@ -164,8 +167,8 @@ public class ProductFragment extends Fragment {
         img_addImageDevice = view.findViewById(R.id.img_addImageDevice_dialog);
         til_nameProduct =  view.findViewById(R.id.til_NameProduct_dialog);
         til_priceProduct =  view.findViewById(R.id.til_PriceProduct_dialog);
-        btn_addVegetable =  view.findViewById(R.id.btn_addVegetable_dialog);
-        btn_cancleVegetable =  view.findViewById(R.id.btn_cancleVegetable_dialog);
+        btn_addBook =  view.findViewById(R.id.btn_addBook_dialog);
+        btn_cancelBook =  view.findViewById(R.id.btn_cancelBook_dialog);
         sp_nameCategory = view.findViewById(R.id.sp_nameCategory);
         adapterSpiner = new ArrayAdapter<>(context,android.R.layout.simple_spinner_dropdown_item,arr);
         sp_nameCategory.setAdapter(adapterSpiner);
@@ -261,57 +264,131 @@ public class ProductFragment extends Fragment {
 
     }
 
-    public  void getAllProducts(){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Product");
-        reference.addValueEventListener(new ValueEventListener() {
+    public void getAllProducts() {
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        Call<List<Product>> call = apiService.getAllProducts();
+
+        call.enqueue(new Callback<List<Product>>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                listProduct.clear();
-                for(DataSnapshot snap : snapshot.getChildren()){
-                    Product product = snap.getValue(Product.class);
-                    listProduct.add(product);
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    listProduct.clear();
+                    listProduct.addAll(response.body());
+
+                    // Log thành công khi lấy dữ liệu
+                    Log.d("ProductFragment", "Dữ liệu sản phẩm đã được lấy thành công. Số lượng sản phẩm: " + listProduct.size());
+                } else {
+                    // Log lỗi khi không có dữ liệu hợp lệ
+                    Log.e("ProductFragment", "Lỗi khi lấy dữ liệu sản phẩm: Không có dữ liệu hợp lệ.");
                 }
             }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
 
+            @Override
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                // Log lỗi khi truy vấn thất bại
+                Log.e("ProductFragment", "Lỗi khi truy vấn dữ liệu sản phẩm: " + t.getMessage());
             }
         });
     }
 
 
-    public void addProduct(Product product){
-            FirebaseDatabase database = FirebaseDatabase.getInstance();
-            DatabaseReference reference = database.getReference("Product");
-            if (listProduct.size() == 0) {
-                product.setCodeProduct(1);
-                reference.child("1").setValue(product);
+    public void addProduct(Product product) {
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
 
-            } else {
-                int i = listProduct.size() - 1;
-                int id = listProduct.get(i).getCodeProduct() + 1;
-                product.setCodeProduct(id);
-                reference.child("" + id).setValue(product);
+        if (listProduct.size() == 0) {
+            product.setCodeProduct(1);
+            Call<Void> call = apiService.addProduct(product);
+
+            call.enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        Log.d("ProductFragment", "Sản phẩm đã được thêm thành công với mã sản phẩm: 1");
+                    } else {
+                        Log.e("ProductFragment", "Lỗi khi thêm sản phẩm: Không thành công");
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    Log.e("ProductFragment", "Lỗi khi thêm sản phẩm: " + t.getMessage());
+                }
+            });
+        } else {
+            int i = listProduct.size() - 1;
+            int id = listProduct.get(i).getCodeProduct() + 1;
+            product.setCodeProduct(id);
+
+            Call<Void> call = apiService.addProduct(product);
+
+            call.enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        Log.d("ProductFragment", "Sản phẩm đã được thêm thành công với mã sản phẩm: " + id);
+                    } else {
+                        Log.e("ProductFragment", "Lỗi khi thêm sản phẩm: Không thành công");
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    Log.e("ProductFragment", "Lỗi khi thêm sản phẩm: " + t.getMessage());
+                }
+            });
+        }
+    }
+
+
+    public void updateProduct(Product product) {
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        // Gửi yêu cầu cập nhật sản phẩm qua API
+        Call<Void> call = apiService.updateProduct(product.getCodeProduct(), product);
+
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.d("ProductFragment", "Sản phẩm đã được cập nhật thành công: " + product.getNameProduct());
+                } else {
+                    Log.e("ProductFragment", "Lỗi khi cập nhật sản phẩm: Phản hồi không thành công");
+                }
             }
-    }
-    public void updateProduct(Product product){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Product");
-        reference.child(""+product.getCodeProduct()).child("nameProduct").setValue(product.getNameProduct());
-        reference.child(""+product.getCodeProduct()).child("priceProduct").setValue(product.getPriceProduct());
-//        if (!role.equals("admin")){
-//            reference.child(""+product.getCodeProduct()).child("codeCategory").setValue("4");
-//        }else {
-//            reference.child(""+product.getCodeProduct()).child("codeCategory").setValue(product.getCodeCategory());
-//        }
 
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e("ProductFragment", "Lỗi khi cập nhật sản phẩm: " + t.getMessage());
+            }
+        });
     }
-    public void deleteProduct(Product product){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Product");
-        reference.child(""+product.getCodeProduct()).removeValue();
+
+
+    public void deleteProduct(Product product) {
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        // Gửi yêu cầu xóa sản phẩm qua API
+        Call<Void> call = apiService.deleteProduct(product.getCodeProduct());
+
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.d("ProductFragment", "Sản phẩm đã được xóa thành công với mã sản phẩm: " + product.getCodeProduct());
+                } else {
+                    Log.e("ProductFragment", "Lỗi khi xóa sản phẩm: Phản hồi không thành công");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e("ProductFragment", "Lỗi khi xóa sản phẩm: " + t.getMessage());
+            }
+        });
     }
+
+
     public boolean isEmptys(String str,TextInputLayout til){
         if (str.isEmpty()){
             til.setError("Không được để trống");

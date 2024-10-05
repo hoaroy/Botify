@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,14 +18,16 @@ import android.view.ViewGroup;
 import com.example.Sachpee.Adapter.Partner_BookAdapter;
 import com.example.Sachpee.Model.Partner;
 import com.example.Sachpee.R;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.example.Sachpee.Service.ApiClient;
+import com.example.Sachpee.Service.ApiService;
+  
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class PartnerBookFragment extends Fragment implements Partner_BookAdapter.ItemClickListener{
@@ -55,28 +58,43 @@ public class PartnerBookFragment extends Fragment implements Partner_BookAdapter
         return view;
     }
 
-    public List<Partner> getAllPartner(){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Partner");
+    public List<Partner> getAllPartner() {
         List<Partner> list1 = new ArrayList<>();
-        reference.addValueEventListener(new ValueEventListener() {
+
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        // Gọi API để lấy danh sách đối tác (Partner)
+        Call<List<Partner>> call = apiService.getAllPartners();
+        call.enqueue(new Callback<List<Partner>>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                list1.clear();
-                for (DataSnapshot snap : snapshot.getChildren()){
-                    Partner partner = snap.getValue(Partner.class);
-                    list1.add(partner);
+            public void onResponse(Call<List<Partner>> call, Response<List<Partner>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    list1.clear();
+
+                    // Lấy dữ liệu từ response
+                    List<Partner> partners = response.body();
+                    Log.d("getAllPartner", "Received " + partners.size() + " partners");
+
+                    // Thêm các partner vào list1
+                    list1.addAll(partners);
+
+                    // Cập nhật adapter
+                    partner_bookAdapter.notifyDataSetChanged();
+                    Log.d("getAllPartner", "Partners loaded and adapter updated. Total: " + list1.size());
+                } else {
+                    Log.e("getAllPartner", "Response not successful: " + response.message());
                 }
-                partner_bookAdapter.notifyDataSetChanged();
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
+            public void onFailure(Call<List<Partner>> call, Throwable t) {
+                Log.e("getAllPartner", "API call failed: " + t.getMessage());
             }
         });
+
         return list1;
     }
+
 
 
     @Override

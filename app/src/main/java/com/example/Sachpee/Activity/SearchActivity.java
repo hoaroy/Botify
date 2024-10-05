@@ -8,20 +8,23 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.Sachpee.Adapter.ProductAdapter;
 import com.example.Sachpee.Fragment.ProductFragments.ProductFragment;
 import com.example.Sachpee.Model.Product;
 import com.example.Sachpee.R;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.example.Sachpee.Service.ApiClient;
+import com.example.Sachpee.Service.ApiService;
+  
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SearchActivity extends AppCompatActivity {
     private List<Product> listProduct = new ArrayList<>();
@@ -53,7 +56,7 @@ public class SearchActivity extends AppCompatActivity {
                 return true;
             }
         });
-        getVanhocProduct();
+        loadProducts();
         rvProduct = findViewById(R.id.rvSearch);
         linearLayoutManager = new LinearLayoutManager(getApplicationContext());
         rvProduct.setLayoutManager(linearLayoutManager);
@@ -81,26 +84,39 @@ public class SearchActivity extends AppCompatActivity {
             rvProduct.setAdapter(adapter);
         }
     }
-    public  void getVanhocProduct(){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Product");
-        //TODO sửa dialog khi load dữ liệu từ firebase lên fragment
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                listProduct.clear();
-                for(DataSnapshot snap : snapshot.getChildren()){
-                    Product product = snap.getValue(Product.class);
-                        listProduct.add(product);
+    public void loadProducts() {
+        // TODO: Sửa dialog khi load dữ liệu từ API lên fragment
 
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        // Gọi API để lấy danh sách sản phẩm
+        Call<List<Product>> call = apiService.getAllProducts();
+        call.enqueue(new Callback<List<Product>>() {
+            @Override
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    listProduct.clear();
+
+                    // Lấy dữ liệu từ response
+                    List<Product> products = response.body();
+                    Log.d("loadProducts", "Received " + products.size() + " products");
+
+                    // Thêm các sản phẩm vào listProduct
+                    listProduct.addAll(products);
+
+                    // Cập nhật adapter để hiển thị dữ liệu lên fragment
+                    adapter.notifyDataSetChanged();
+                    Log.d("loadProducts", "Products loaded and adapter updated. Total: " + listProduct.size());
+                } else {
+                    Log.e("loadProducts", "Response not successful: " + response.message());
                 }
-                adapter.notifyDataSetChanged();
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                Log.e("loadProducts", "API call failed: " + t.getMessage());
             }
         });
     }
+
 }

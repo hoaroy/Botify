@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,15 +26,17 @@ import android.view.ViewGroup;
 import com.example.Sachpee.Adapter.AdapterBill;
 import com.example.Sachpee.Model.Bill;
 import com.example.Sachpee.R;
+import com.example.Sachpee.Service.ApiClient;
+import com.example.Sachpee.Service.ApiService;
 import com.example.Sachpee.databinding.FragmentBillBinding;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+  
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class CurrentOrderFragment extends Fragment {
@@ -56,36 +59,52 @@ public class CurrentOrderFragment extends Fragment {
         rvBill = view.findViewById(R.id.rv_billCurrent);
         linearLayoutManager = new LinearLayoutManager(getContext());
         rvBill.setLayoutManager(linearLayoutManager);
-        adapterBill = new AdapterBill(listBill,getContext());
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+        adapterBill = new AdapterBill(listBill,getContext(),apiService);
         rvBill.setAdapter(adapterBill);
     }
-    public void getBill(){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Bill");
+    public void getBill() {
+        // Lấy thông tin người dùng từ SharedPreferences
         SharedPreferences preferences = getContext().getSharedPreferences("My_User", Context.MODE_PRIVATE);
-        String user = preferences.getString("username","");
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                listBill.clear();
+        String user = preferences.getString("username", "");
 
-                for (DataSnapshot snap : snapshot.getChildren()){
-                    Bill bill = snap.getValue(Bill.class);
-                    if (user.equals(bill.getIdPartner()) && bill.getStatus().equals("No")) {
-                        listBill.add(bill);
-                    }else if (user.equals(bill.getIdClient()) && bill.getStatus().equals("No")){
-                        listBill.add(bill);
+        // Tạo instance của ApiService
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        // Gọi API để lấy danh sách bill
+        Call<List<Bill>> call = apiService.getAllBills();
+        call.enqueue(new Callback<List<Bill>>() {
+            @Override
+            public void onResponse(Call<List<Bill>> call, Response<List<Bill>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    listBill.clear();  // Xóa danh sách cũ
+
+                    List<Bill> bills = response.body();  // Lấy danh sách bill từ API
+
+                    // Lọc các bill theo điều kiện
+                    for (Bill bill : bills) {
+                        if (user.equals(bill.getIdPartner()) && "No".equals(bill.getStatus())) {
+                            listBill.add(bill);
+                        } else if (user.equals(bill.getIdClient()) && "No".equals(bill.getStatus())) {
+                            listBill.add(bill);
+                        }
                     }
+
+                    // Cập nhật adapter
+                    adapterBill.notifyDataSetChanged();
+                    Log.d("getBill", "Bills filtered and added to list. Total: " + listBill.size());
+                } else {
+                    Log.e("getBill", "Response not successful: " + response.message());
                 }
-                adapterBill.notifyDataSetChanged();
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
+            public void onFailure(Call<List<Bill>> call, Throwable t) {
+                Log.e("getBill", "API call failed: " + t.getMessage());
             }
         });
     }
+
     public  void notification(){
         String CHANNEL_ID="1234";
 

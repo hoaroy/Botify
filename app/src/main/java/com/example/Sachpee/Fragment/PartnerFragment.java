@@ -5,6 +5,7 @@ import static android.app.Activity.RESULT_OK;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,13 +32,11 @@ import com.example.Sachpee.Adapter.PartnerAdapter;
 import com.example.Sachpee.Model.Partner;
 import com.example.Sachpee.Model.User;
 import com.example.Sachpee.R;
+import com.example.Sachpee.Service.ApiClient;
+import com.example.Sachpee.Service.ApiService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
 
@@ -44,6 +44,10 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class PartnerFragment extends Fragment {
@@ -212,63 +216,123 @@ public class PartnerFragment extends Fragment {
         til_rePasswordPartner.getEditText().setText("");
         img_Partner.setImageResource(R.drawable.ic_menu_camera1);
     }
-    public List<Partner> getAllPartner(){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Partner");
+    public List<Partner> getAllPartner() {
+        ProgressDialog progressDialog = new ProgressDialog(requireContext());
+        progressDialog.setMessage("Vui lòng đợi ...");
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.show(); // Hiển thị ProgressDialog
+
         List<Partner> list1 = new ArrayList<>();
-        reference.addValueEventListener(new ValueEventListener() {
+
+
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+        Call<List<Partner>> call = apiService.getAllPartners(); // Giả định rằng API trả về tất cả Partner
+
+        call.enqueue(new Callback<List<Partner>>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                list1.clear();
-                for (DataSnapshot snap : snapshot.getChildren()){
-                    Partner partner = snap.getValue(Partner.class);
-                    list1.add(partner);
+            public void onResponse(Call<List<Partner>> call, Response<List<Partner>> response) {
+                progressDialog.dismiss(); // Ẩn ProgressDialog khi nhận được phản hồi
+                if (response.isSuccessful() && response.body() != null) {
+                    list1.clear(); // Xóa dữ liệu cũ
+
+                    // Thêm đối tượng Partner vào danh sách
+                    list1.addAll(response.body());
+
+                    adapter.notifyDataSetChanged(); // Cập nhật adapter với dữ liệu mới
+                    Log.d("BookFragment", "Danh sách đối tác đã được lấy thành công: " + list1.size());
+                } else {
+                    Log.e("BookFragment", "Lỗi khi lấy dữ liệu từ API: " + response.message());
                 }
-                adapter.notifyDataSetChanged();
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
+            public void onFailure(Call<List<Partner>> call, Throwable t) {
+                progressDialog.dismiss(); // Ẩn ProgressDialog khi gặp lỗi
+                Log.e("BookFragment", "Lỗi kết nối khi gọi API: " + t.getMessage());
             }
         });
-        return list1;
+
+        return list1; // Trả về danh sách đối tác
     }
-    public List<User> getAllUser(){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("User");
+
+    public List<User> getAllUser() {
+        ProgressDialog progressDialog = new ProgressDialog(requireContext());
+        progressDialog.setMessage("Vui lòng đợi ...");
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.show(); // Hiển thị ProgressDialog
+
         List<User> list1 = new ArrayList<>();
-        reference.addValueEventListener(new ValueEventListener() {
+
+        // Sử dụng Retrofit để gọi API
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+        Call<List<User>> call = apiService.getAllUsers(); //  API trả về danh sách User
+
+        call.enqueue(new Callback<List<User>>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                list1.clear();
-                for (DataSnapshot snap : snapshot.getChildren()){
-                    User user = snap.getValue(User.class);
-                    list1.add(user);
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                progressDialog.dismiss(); // Ẩn ProgressDialog khi nhận được phản hồi
+                if (response.isSuccessful() && response.body() != null) {
+                    list1.clear(); // Xóa dữ liệu cũ
+
+                    // Thêm dữ liệu người dùng vào danh sách
+                    list1.addAll(response.body());
+
+                    adapter.notifyDataSetChanged(); // Cập nhật adapter
+                    Log.d("BookFragment", "Danh sách người dùng đã được lấy thành công: " + list1.size());
+                } else {
+                    Log.e("BookFragment", "Lỗi khi lấy dữ liệu từ API: " + response.message());
                 }
-                adapter.notifyDataSetChanged();
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
+            public void onFailure(Call<List<User>> call, Throwable t) {
+                progressDialog.dismiss(); // Ẩn ProgressDialog khi gặp lỗi
+                Log.e("BookFragment", "Lỗi kết nối khi gọi API: " + t.getMessage());
             }
         });
-        return list1;
+
+        return list1; // Trả về danh sách người dùng
     }
-    public void addPartner(Partner partner){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Partner");
-        if (listPartner.size()==0){
+
+    public void addPartner(Partner partner) {
+        ProgressDialog progressDialog = new ProgressDialog(requireContext());
+        progressDialog.setMessage("Đang thêm đối tác...");
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.show(); // Hiển thị ProgressDialog
+
+        // Sử dụng Retrofit để gọi API thêm đối tác
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        // Tạo ID cho đối tác mới
+        if (listPartner.size() == 0) {
             partner.setIdPartner(1);
-            reference.child("1").setValue(partner);
-        }else if (listPartner.size()!=0){
-            int i = listPartner.size()-1;
-            int id = listPartner.get(i).getIdPartner() + 1;
-            partner.setIdPartner(id);
-            reference.child(""+id).setValue(partner);
+        } else {
+            int lastIndex = listPartner.size() - 1;
+            int newId = listPartner.get(lastIndex).getIdPartner() + 1;
+            partner.setIdPartner(newId);
         }
+
+        Call<Void> call = apiService.addPartner(partner); //  API  phương thức thêm đối tác
+
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                progressDialog.dismiss(); // Ẩn ProgressDialog khi nhận được phản hồi
+                if (response.isSuccessful()) {
+                    Log.d("BookFragment", "Đối tác đã được thêm thành công với ID: " + partner.getIdPartner());
+                } else {
+                    Log.e("BookFragment", "Lỗi khi thêm đối tác: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                progressDialog.dismiss(); // Ẩn ProgressDialog khi gặp lỗi
+                Log.e("BookFragment", "Lỗi kết nối khi gọi API thêm đối tác: " + t.getMessage());
+            }
+        });
     }
+
 
     private void captureImage() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);

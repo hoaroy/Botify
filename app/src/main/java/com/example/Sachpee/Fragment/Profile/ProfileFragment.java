@@ -29,6 +29,8 @@ import com.example.Sachpee.Activity.MainActivity;
 import com.example.Sachpee.Model.Partner;
 import com.example.Sachpee.Model.User;
 import com.example.Sachpee.R;
+import com.example.Sachpee.Service.ApiClient;
+import com.example.Sachpee.Service.ApiService;
 import com.example.Sachpee.databinding.FragmentProfileBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -44,6 +46,10 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ProfileFragment extends Fragment implements View.OnClickListener {
     private static final String TAG = "ProfileFragment";
@@ -204,30 +210,49 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
     private void updatePartnerInfo() {
         Log.d(TAG, "updatePartnerInfo: start");
-        partner.setNamePartner(mLayoutName.getEditText().getText().toString());
-        partner.setAddressPartner(mLayoutAddress.getEditText().getText().toString());
-        partner.setUserPartner(mLayoutPhoneNumber.getEditText().getText().toString());
-        Bitmap bitmap = ((BitmapDrawable)ivAvatar.getDrawable()).getBitmap();
+
+        // Cập nhật thông tin đối tác từ các trường nhập liệu
+        String namePartner = mLayoutName.getEditText().getText().toString();
+        String addressPartner = mLayoutAddress.getEditText().getText().toString();
+        String userPartner = mLayoutPhoneNumber.getEditText().getText().toString();
+
+        // Xử lý hình ảnh thành Base64
+        Bitmap bitmap = ((BitmapDrawable) ivAvatar.getDrawable()).getBitmap();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG,100,outputStream);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
         byte[] imgByte = outputStream.toByteArray();
+
+        String imgPartner = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String imgPartner = java.util.Base64.getEncoder().encodeToString(imgByte);
-            partner.setImgPartner(imgPartner);
+            imgPartner = java.util.Base64.getEncoder().encodeToString(imgByte);
         }
-        DatabaseReference mDatabase;
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        Map<String, Object> userValue = partner.toMap();
-        Map<String, Object> userUpdateValue = new HashMap<>();
-        userUpdateValue.put("/Partner/" + partner.getIdPartner(), userValue);
-        mDatabase.updateChildren(userUpdateValue).addOnCompleteListener(new OnCompleteListener<Void>() {
+
+        // Sử dụng phương thức toMap để chuyển đổi Partner thành Map
+        Map<String, Object> fields = partner.toMap();
+
+        // Tạo instance của ApiService
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        // Gọi API PATCH để cập nhật thông tin Partner
+        Call<Void> call = apiService.updatePartner(partner.getIdPartner(), fields);
+        call.enqueue(new Callback<Void>() {
             @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                Log.d(TAG, "onComplete: ");
-                profileViewModel.setPartner(partner);
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "onComplete: Partner info updated successfully.");
+                    profileViewModel.setPartner(partner);  // Cập nhật Partner vào ViewModel
+                } else {
+                    Log.e(TAG, "onResponse: Failed to update partner. Error: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e(TAG, "onFailure: Failed to update partner. Error: " + t.getMessage());
             }
         });
     }
+
 
     private void onClickRequestPermission() {
         MainActivity mainActivity = (MainActivity) getActivity();

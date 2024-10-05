@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
+
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,14 +19,16 @@ import com.example.Sachpee.Adapter.ProductAdapter;
 import com.example.Sachpee.Fragment.ProductFragments.ProductFragment;
 import com.example.Sachpee.Model.Product;
 import com.example.Sachpee.R;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.example.Sachpee.Service.ApiClient;
+import com.example.Sachpee.Service.ApiService;
+
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class Book_Of_PartnerFragment extends Fragment {
@@ -53,37 +55,44 @@ public class Book_Of_PartnerFragment extends Fragment {
         return view;
     }
 
-    private List<Product> loadListFood(){
+    private List<Product> loadListFood() {
+        // Lấy đối tác từ SharedPreferences
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("Partner", Context.MODE_PRIVATE);
-        String partner = sharedPreferences.getString("partner","");
-        Log.d("aaaaaaaaaaa",partner);
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference1 = database.getReference("Product");
-//        DatabaseReference reference2 = database.getReference("Partner");
+        String partner = sharedPreferences.getString("partner", "");
+        Log.d("loadListFood", "Partner: " + partner);
 
 
-        reference1.addValueEventListener(new ValueEventListener() {
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        Call<List<Product>> call = apiService.getAllProducts();  // Giả định phương thức lấy tất cả sản phẩm
+        call.enqueue(new Callback<List<Product>>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                listProduct.clear();
-                for(DataSnapshot snap : snapshot.getChildren()){
-                    Product product = snap.getValue(Product.class);
-                    if ( product.getCodeCategory()==4 && partner.equals(product.getUserPartner())){
-                        listProduct.add(product);
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    listProduct.clear();
+
+                    // Lặp qua danh sách sản phẩm nhận được từ API
+                    for (Product product : response.body()) {
+                        // Kiểm tra category và đối tác
+                        if (product.getCodeCategory() == 4 && partner.equals(product.getUserPartner())) {
+                            listProduct.add(product);
+                        }
                     }
 
+                    adapter.notifyDataSetChanged();
+                    Log.d("loadListFood", "Số lượng sản phẩm hiển thị: " + listProduct.size());
+                } else {
+                    Log.e("loadListFood", "Phản hồi không thành công: " + response.code());
                 }
-                adapter.notifyDataSetChanged();
-
-
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                Log.e("loadListFood", "Lỗi khi gọi API: " + t.getMessage());
             }
         });
 
         return listProduct;
     }
+
 }

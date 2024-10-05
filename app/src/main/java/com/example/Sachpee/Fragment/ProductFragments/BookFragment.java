@@ -15,13 +15,14 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
+
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,17 +31,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.Sachpee.Activity.Callback.ProductPartnerCallback;
 import com.example.Sachpee.Adapter.ProductAdapter;
 import com.example.Sachpee.Model.Partner;
 import com.example.Sachpee.Model.Product;
 import com.example.Sachpee.R;
+import com.example.Sachpee.Service.ApiClient;
+import com.example.Sachpee.Service.ApiService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
 
@@ -49,10 +49,14 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 
 public class BookFragment extends Fragment {
     private List<Product> listFood;
-    private RecyclerView rvFood;
+    private RecyclerView rvBook;
     private LinearLayoutManager linearLayoutManager;
     private ProductAdapter adapter;
     private View view;
@@ -66,7 +70,7 @@ public class BookFragment extends Fragment {
     private ImageView img_Product,img_addImageCamera,img_addImageDevice;
     private String nameProduct,imgProduct,userPartner,priceProduct;
     private int codeCategory;
-    private Button btn_addVegetable,btn_cancleVegetable;
+    private Button btn_addBook,btn_cancelBook;
     private static final int REQUEST_ID_IMAGE_CAPTURE =10;
     private static final int PICK_IMAGE =100;
     private ProductFragment fragment = new ProductFragment();
@@ -77,81 +81,162 @@ public class BookFragment extends Fragment {
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_book, container, false);
         initUI();
-        rvFood.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        rvBook.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
         sharedPreferences = getContext().getSharedPreferences("My_User", Context.MODE_PRIVATE);
         user = sharedPreferences.getString("username","");
         if(user.equals("admin")){
-           view.findViewById(R.id.fab_addFood_fragment).setVisibility(View.GONE);
+           view.findViewById(R.id.fab_addBook_fragment).setVisibility(View.GONE);
         }else {
-            view.findViewById(R.id.fab_addFood_fragment).setVisibility(View.VISIBLE);
+            view.findViewById(R.id.fab_addBook_fragment).setVisibility(View.VISIBLE);
         }
-        fab_addProduct = view.findViewById(R.id.fab_addFood_fragment);
+        fab_addProduct = view.findViewById(R.id.fab_addBook_fragment);
         fab_addProduct.setOnClickListener(view1 -> {
             dialogProduct();
         });
 
         return view;
-    }public void initUI(){
-        listProduct = getAllProduct();
-        listFood = getProductPartner();
-        rvFood = view.findViewById(R.id.rvFood);
-        linearLayoutManager = new LinearLayoutManager(getContext());
-        rvFood.setLayoutManager(linearLayoutManager);
-        adapter = new ProductAdapter(listFood,fragment,getContext());
-        rvFood.setAdapter(adapter);
-
     }
-    public  List<Product> getAllProduct(){
+    public void initUI() {
+        listProduct = getAllProduct();
+        rvBook = view.findViewById(R.id.rvBook);
+        linearLayoutManager = new LinearLayoutManager(getContext());
+        rvBook.setLayoutManager(linearLayoutManager);
+
+        // Gọi getProductPartner và cung cấp callback
+        getProductPartner(new ProductPartnerCallback() {
+            @Override
+            public void onProductsLoaded(List<Product> products) {
+                listFood = products; // Cập nhật danh sách sản phẩm
+                adapter = new ProductAdapter(listFood, fragment, getContext()); // Khởi tạo adapter với danh sách mới
+                rvBook.setAdapter(adapter); // Đặt adapter cho RecyclerView
+            }
+        });
+    }
+
+    public List<Product> getAllProduct() {
         ProgressDialog progressDialog = new ProgressDialog(requireContext());
         progressDialog.setMessage("Vui lòng đợi ...");
         progressDialog.setCanceledOnTouchOutside(false);
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Product");
         List<Product> list1 = new ArrayList<>();
         progressDialog.show();
-        reference.addValueEventListener(new ValueEventListener() {
+
+
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        Call<List<Product>> call = apiService.getAllProducts();
+
+        call.enqueue(new Callback<List<Product>>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
                 progressDialog.dismiss();
-                list1.clear();
-                for(DataSnapshot snap : snapshot.getChildren()){
-                    Product product = snap.getValue(Product.class);
-                    list1.add(product);
+                if (response.isSuccessful() && response.body() != null) {
+                    list1.clear();
+                    list1.addAll(response.body());
+                    Log.d("BookFragment", "Sản phẩm đã được lấy thành công: " + list1.size());
+                } else {
+                    Log.e("BookFragment", "Lỗi khi lấy dữ liệu: " + response.message());
                 }
             }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
 
+            @Override
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                progressDialog.dismiss();
+                Log.e("BookFragment", "Lỗi kết nối: " + t.getMessage());
             }
         });
-        return list1;
+
+        return list1; //  phương thức này sẽ trả về danh sách trống, vì gọi API là bất đồng bộ
     }
-    public  List<Product> getProductPartner(){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Product");
-        List<Product> list1 = new ArrayList<>();
-        reference.addValueEventListener(new ValueEventListener() {
+
+    public void getProductPartner(ProductPartnerCallback callback) {
+        ProgressDialog progressDialog = new ProgressDialog(requireContext());
+        progressDialog.setMessage("Vui lòng đợi ...");
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.show();
+
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+        Call<List<Product>> call = apiService.getAllProducts();
+
+        call.enqueue(new Callback<List<Product>>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                list1.clear();
-                for(DataSnapshot snap : snapshot.getChildren()){
-                    Product product = snap.getValue(Product.class);
-                    if (user.equals("admin") && product.getCodeCategory()==4){
-                        list1.add(product);
-                    }else if (product.getUserPartner().equals(user) && product.getCodeCategory()==4 ){
-                        list1.add(product);
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                progressDialog.dismiss();
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Product> list1 = new ArrayList<>();
+                    for (Product product : response.body()) {
+                        if (user.equals("admin") && product.getCodeCategory() == 4) {
+                            list1.add(product);
+                        } else if (product.getUserPartner().equals(user) && product.getCodeCategory() == 4) {
+                            list1.add(product);
+                        }
                     }
+                    callback.onProductsLoaded(list1); // Gọi callback để trả về list sản phẩm
+                    Log.d("BookFragment", "Sản phẩm đối tác đã được lấy thành công: " + list1.size());
+                } else {
+                    Log.e("BookFragment", "Lỗi khi lấy dữ liệu: " + response.message());
                 }
-                adapter.notifyDataSetChanged();
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                progressDialog.dismiss();
+                Log.e("BookFragment", "Lỗi kết nối: " + t.getMessage());
             }
         });
-        return list1;
+    }
+
+
+    public void addProduct(Product product) {
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        // Gọi API để lấy tất cả sản phẩm trước khi thêm sản phẩm mới
+        Call<List<Product>> call = apiService.getAllProducts();
+
+        call.enqueue(new Callback<List<Product>>() {
+            @Override
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Product> listProduct = response.body();
+                    int newCodeProduct;
+
+                    // Nếu danh sách sản phẩm rỗng, thiết lập codeProduct là 1
+                    if (listProduct.isEmpty()) {
+                        newCodeProduct = 1;
+                    } else {
+                        int lastIndex = listProduct.size() - 1;
+                        newCodeProduct = listProduct.get(lastIndex).getCodeProduct() + 1; // Lấy ID mới
+                    }
+
+                    product.setCodeProduct(newCodeProduct);
+
+                    // Gọi API để thêm sản phẩm
+                    Call<Void> addProductCall = apiService.addProduct(product);
+                    addProductCall.enqueue(new Callback<Void>() {
+                        @Override
+                        public void onResponse(Call<Void> call, Response<Void> response) {
+                            if (response.isSuccessful()) {
+                                Log.d("BookFragment", "Sản phẩm đã được thêm thành công!");
+                            } else {
+                                Log.e("BookFragment", "Lỗi khi thêm sản phẩm: " + response.message());
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<Void> call, Throwable t) {
+                            Log.e("BookFragment", "Lỗi kết nối: " + t.getMessage());
+                        }
+                    });
+                } else {
+                    Log.e("BookFragment", "Lỗi khi lấy danh sách sản phẩm: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                Log.e("BookFragment", "Lỗi kết nối: " + t.getMessage());
+            }
+        });
     }
 
     private void dialogProduct() {
@@ -169,12 +254,12 @@ public class BookFragment extends Fragment {
         img_addImageDevice.setOnClickListener(view1 -> {
             requestPermissionDevice();
         });
-        btn_addVegetable.setOnClickListener(view1 -> {
+        btn_addBook.setOnClickListener(view1 -> {
             getData();
             validate();
 
         });
-        btn_cancleVegetable.setOnClickListener(view1 -> {
+        btn_cancelBook.setOnClickListener(view1 -> {
             alertDialog.dismiss();
         });
     }
@@ -185,8 +270,8 @@ public class BookFragment extends Fragment {
         img_addImageDevice = view.findViewById(R.id.img_addImageDevice_dialog);
         til_nameProduct =  view.findViewById(R.id.til_NameProduct_dialog);
         til_priceProduct =  view.findViewById(R.id.til_PriceProduct_dialog);
-        btn_addVegetable =  view.findViewById(R.id.btn_addVegetable_dialog);
-        btn_cancleVegetable =  view.findViewById(R.id.btn_cancleVegetable_dialog);
+        btn_addBook =  view.findViewById(R.id.btn_addBook_dialog);
+        btn_cancelBook =  view.findViewById(R.id.btn_cancelBook_dialog);
     }
     public void requestPermissionCamera(){
         PermissionListener permissionlistener = new PermissionListener() {
@@ -320,19 +405,5 @@ public class BookFragment extends Fragment {
         addProduct(product);
 
     }
-    public void addProduct(Product product){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Product");
-        if (listProduct.size()==0){
-            product.setCodeProduct(1);
-            reference.child("1").setValue(product);
 
-        }else {
-            int i = listProduct.size()-1;
-            int id = listProduct.get(i).getCodeProduct()+1;
-            product.setCodeProduct(id);
-
-            reference.child(""+id).setValue(product);
-        }
-    }
 }

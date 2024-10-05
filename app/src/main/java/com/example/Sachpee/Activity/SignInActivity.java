@@ -1,5 +1,7 @@
 package com.example.Sachpee.Activity;
 
+import static androidx.constraintlayout.motion.widget.TransitionBuilder.validate;
+
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -16,17 +18,20 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.Sachpee.Model.Partner;
+import com.example.Sachpee.Model.User;
 import com.example.Sachpee.R;
+import com.example.Sachpee.Service.ApiClient;
+import com.example.Sachpee.Service.ApiService;
 import com.example.Sachpee.constant.Profile;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SignInActivity extends AppCompatActivity implements View.OnClickListener {
     private final String TAG = "SignInActivity";
@@ -90,43 +95,56 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     private void userLogin() {
         formEmail.setError(null);
         formPassword.setError(null);
+
+        // Lấy số điện thoại và mật khẩu từ giao diện người dùng
         String phoneNumber = formEmail.getEditText().getText().toString().trim();
         String passwordUser = formPassword.getEditText().getText().toString().trim();
+
+        // Kiểm tra tính hợp lệ của dữ liệu
         if (!validate(phoneNumber, passwordUser)) return;
+
+        // Hiển thị thanh tiến trình
         progressBar.setVisibility(View.VISIBLE);
-        final DatabaseReference rootReference = FirebaseDatabase.getInstance().getReference();
-        rootReference.child("User").child(phoneNumber)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        progressBar.setVisibility(View.INVISIBLE);
-                        if (snapshot.exists()) {
-                            String password = snapshot.child("password").getValue(String.class);
-                            if (password.equals(passwordUser)) {
-                                //TODO ĐĂNG NHẬP VÀO APP
-                                remember("user", phoneNumber);
-                                Intent intent = new Intent(SignInActivity.this, MainActivity.class);
-                                startActivity(intent);
-                                finishAffinity();
-                                return;
-                            }
-                            //TODO THÔNG BÁO MẬT KHẨU KHÔNG ĐÚNG
-                            formPassword.setError("Mật khẩu không đúng");
-                            return;
-                        }
-                        //TODO THÔNG BÁO TÀI KHOẢN CHƯA TỒN TẠI
-                        formEmail.setError("Tài khoản không tồn tại");
-                    }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        //TODO THÔNG BÁO LỖI KHI ĐĂNG NHẬP
-                        progressBar.setVisibility(View.INVISIBLE);
-                        Log.e(TAG, "onCancelled: ", error.toException());
+        // Gọi API lấy thông tin người dùng
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+        Call<User> call = apiService.getUserByPhoneNumber(phoneNumber); // Gọi API lấy thông tin người dùng
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                // Ẩn thanh tiến trình
+                progressBar.setVisibility(View.INVISIBLE);
+
+                if (response.isSuccessful() && response.body() != null) {
+                    // Lấy mật khẩu từ đối tượng User trả về
+                    User user = response.body();
+                    String password = user.getPassword();
+
+                    // So sánh mật khẩu
+                    if (password.equals(passwordUser)) {
+                        // Đăng nhập thành công
+                        remember("user", phoneNumber);
+                        Intent intent = new Intent(SignInActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finishAffinity();
+                    } else {
+                        // Thông báo mật khẩu không đúng
+                        formPassword.setError("Mật khẩu không đúng");
                     }
-                });
+                } else {
+                    // Thông báo tài khoản không tồn tại
+                    formEmail.setError("Tài khoản không tồn tại");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                // Xử lý khi có lỗi xảy ra
+                progressBar.setVisibility(View.INVISIBLE);
+                Log.e(TAG, "onFailure: " + t.getMessage());
+            }
+        });
     }
-
 
     public boolean logins(){
         //TODO validate partner login
@@ -196,30 +214,50 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         return true;
 
     }
-    public List<Partner> getAllPartner(){
+    public List<Partner> getAllPartner() {
         ProgressDialog progressDialog = new ProgressDialog(this);
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Partner");
-        List<Partner> list1 = new ArrayList<>();
+        List<Partner> list1 = new ArrayList<>(); // Danh sách đối tác sẽ được lưu ở đây
+
+        // Hiển thị ProgressDialog khi dữ liệu đang được tải
         progressDialog.show();
-        reference.addValueEventListener(new ValueEventListener() {
+
+        // Gọi API lấy danh sách đối tác (Partner)
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+        Call<List<Partner>> call = apiService.getAllPartners(); // Gọi API từ server
+        call.enqueue(new Callback<List<Partner>>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                list1.clear();
-                for (DataSnapshot snap : snapshot.getChildren()){
-                    Partner partner = snap.getValue(Partner.class);
-                    list1.add(partner);
-                }
+            public void onResponse(Call<List<Partner>> call, Response<List<Partner>> response) {
+                // Ẩn ProgressDialog khi nhận được phản hồi
                 progressDialog.dismiss();
+
+                if (response.isSuccessful() && response.body() != null) {
+                    // Xóa dữ liệu cũ trong list1
+                    list1.clear();
+
+                    // Thêm danh sách đối tác mới vào list1
+                    list1.addAll(response.body());
+
+                    // TODO: Cập nhật UI hoặc xử lý danh sách đối tác trong `list1`
+                    // Ví dụ: adapter.notifyDataSetChanged() nếu đang dùng RecyclerView.
+                } else {
+                    // Xử lý khi không nhận được dữ liệu thành công
+                    Log.e("Error", "Không lấy được dữ liệu đối tác");
+                }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+            public void onFailure(Call<List<Partner>> call, Throwable t) {
+                // Ẩn ProgressDialog khi có lỗi
                 progressDialog.dismiss();
+                Log.e("Error", "onFailure: " + t.getMessage());
             }
         });
+
+        // Trả về danh sách list1 (mặc dù sẽ được cập nhật không đồng bộ sau khi API phản hồi)
         return list1;
     }
+
+
 
     @Override
     protected void onStop() {

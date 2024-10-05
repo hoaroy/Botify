@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,11 +26,9 @@ import com.example.Sachpee.Fragment.ProductFragments.ProductFragment;
 import com.example.Sachpee.Model.Cart;
 import com.example.Sachpee.Model.Product;
 import com.example.Sachpee.R;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.example.Sachpee.Service.ApiClient;
+import com.example.Sachpee.Service.ApiService;
+
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -39,9 +38,13 @@ import android.widget.Toast;
 
 import java.util.List;
 
-public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.viewHolder> {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+// TODO BUG Payload Too Large for img
+public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHolder> {
     private List<Product> list;
-    private List<Cart> listCart;
+    private List<Cart> listCart = new ArrayList<>(); // Khởi tạo danh sách giỏ hàng
     private ProductFragment fragment;
     private Context context;
 
@@ -49,32 +52,34 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.viewHold
         this.list = list;
         this.fragment = fragment;
         this.context = context;
-        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
-    public viewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_product,parent,false);
-        return new viewHolder(view);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_product, parent, false);
+        return new ViewHolder(view);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
-    public void onBindViewHolder(@NonNull viewHolder holder, int position) {
-        SharedPreferences preferences = context.getSharedPreferences("My_User",Context.MODE_PRIVATE);
-        String user = preferences.getString("username","");
-        String role = preferences.getString("role","");
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        SharedPreferences preferences = context.getSharedPreferences("My_User", Context.MODE_PRIVATE);
+        String user = preferences.getString("username", "");
+        String role = preferences.getString("role", "");
 
-            Product product = list.get(position);
-            NumberFormat numberFormat = new DecimalFormat("#,##0");
-            listCart = getAllCart();
-            byte[] imgByte = Base64.decode(product.getImgProduct(), Base64.DEFAULT);
-            Bitmap bitmap = BitmapFactory.decodeByteArray(imgByte, 0, imgByte.length);
-            holder.imgProduct.setImageBitmap(bitmap);
-            holder.tvNameProduct.setText(String.valueOf(product.getNameProduct()));
-            holder.tvPriceProduct.setText(numberFormat.format(product.getPriceProduct()) + " đ");
-            holder.cardProuct.setOnClickListener(view -> {
+        Product product = list.get(position);
+        NumberFormat numberFormat = new DecimalFormat("#,##0");
+
+        // Gọi getAllCart() để lấy danh sách giỏ hàng
+        getAllCart(user); // Cập nhật giỏ hàng trước khi thực hiện các thao tác
+
+        byte[] imgByte = Base64.decode(product.getImgProduct(), Base64.DEFAULT);
+        Bitmap bitmap = BitmapFactory.decodeByteArray(imgByte, 0, imgByte.length);
+        holder.imgProduct.setImageBitmap(bitmap);
+        holder.tvNameProduct.setText(String.valueOf(product.getNameProduct()));
+        holder.tvPriceProduct.setText(numberFormat.format(product.getPriceProduct()) + " đ");
+        holder.cardProduct.setOnClickListener(view -> {
                 if (role.equals("admin") || role.equals("partner")) {
                     if (holder.btnUpdateProduct.getVisibility() == View.VISIBLE || holder.btnDeleteProduct.getVisibility() == View.VISIBLE) {
                         holder.btnUpdateProduct.setVisibility(View.GONE);
@@ -144,11 +149,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.viewHold
 
     }
 
-    private void deleteCart(Cart cart) {
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Cart");
-        reference.child(""+cart.getIdCart()).removeValue();
-    }
+
 
 
     @Override
@@ -159,73 +160,103 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.viewHold
         return 0;
     }
 
-    public class viewHolder extends RecyclerView.ViewHolder{
+    public void updateData(List<Product> products) {
+        this.list.clear();
+        this.list.addAll(products);
+        notifyDataSetChanged();
+    }
 
-        private TextView tvNameProduct,tvPriceProduct;
+
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        private TextView tvNameProduct, tvPriceProduct;
         private ImageView imgProduct;
-        private CardView cardProuct;
-        private Button btnUpdateProduct,btnDeleteProduct;
-        private Button btn_addCart;
-        public viewHolder(@NonNull View itemView) {
+        private CardView cardProduct;
+        private Button btnUpdateProduct, btnDeleteProduct, btn_addCart;
+
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvNameProduct = itemView.findViewById(R.id.tvNameProduct_item);
             tvPriceProduct = itemView.findViewById(R.id.tvPriceProduct_item);
             imgProduct = itemView.findViewById(R.id.imgProduct_item);
-            cardProuct = itemView.findViewById(R.id.cardProduct);
+            cardProduct = itemView.findViewById(R.id.cardProduct);
             btnUpdateProduct = itemView.findViewById(R.id.btn_updateProduct_item);
             btnDeleteProduct = itemView.findViewById(R.id.btn_deleteProduct_item);
             btn_addCart = itemView.findViewById(R.id.btn_addCart_item);
-
         }
-
-        }
-
-    public void addProductCart(Cart cart){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Cart");
-        if (listCart.size()==0){
-            cart.setIdCart(1);
-            reference.child("1").setValue(cart);
-            Toast.makeText(context, "Bạn đã thêm sản phẩm vào giỏ hàng", Toast.LENGTH_SHORT).show();
-
-        }else {
-            int i = listCart.size()-1;
-            int id = listCart.get(i).getIdCart()+1;
-            cart.setIdCart(id);
-            reference.child(""+id).setValue(cart);
-            Toast.makeText(context, "Bạn đã thêm sản phẩm vào giỏ hàng", Toast.LENGTH_SHORT).show();
-        }
-
     }
-    public  List<Cart> getAllCart(){
-        SharedPreferences preferences = context.getSharedPreferences("My_User",context.MODE_PRIVATE);
-        String user = preferences.getString("username","");
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Cart");
-        List<Cart> list1 = new ArrayList<>();
-        reference.addValueEventListener(new ValueEventListener() {
+
+    private void deleteCart(Cart cart) {
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        Call<Void> call = apiService.deleteCartItem(cart.getIdCart());
+        call.enqueue(new Callback<Void>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                list1.clear();
-                for(DataSnapshot snap : snapshot.getChildren()){
-                    Cart cart = snap.getValue(Cart.class);
-                    if(cart!=null){
-                        if (cart.getUserClient().equals(user)){
-                            list1.add(cart);
-
-                        }
-                    }
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.d("ProductAdapter", "Sản phẩm trong giỏ hàng đã được xóa thành công với mã giỏ hàng: " + cart.getIdCart());
+                } else {
+                    Log.e("ProductAdapter", "Lỗi khi xóa sản phẩm: " + response.message());
                 }
-
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e("ProductAdapter", "Lỗi khi xóa sản phẩm: " + t.getMessage());
             }
         });
-        return list1;
     }
+
+    public void addProductCart(Cart cart) {
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        if (listCart.size() == 0) {
+            cart.setIdCart(1);
+        } else {
+            int i = listCart.size() - 1;
+            int id = listCart.get(i).getIdCart() + 1;
+            cart.setIdCart(id);
+        }
+
+        Call<Cart> call = apiService.addCart(cart);
+        call.enqueue(new Callback<Cart>() {
+            @Override
+            public void onResponse(Call<Cart> call, Response<Cart> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(context, "Bạn đã thêm sản phẩm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.e("ProductAdapter", "Lỗi khi thêm sản phẩm: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Cart> call, Throwable t) {
+                Log.e("ProductAdapter", "Lỗi khi thêm sản phẩm: " + t.getMessage());
+            }
+        });
+    }
+
+    private void getAllCart(String user) {
+        // API Call để lấy giỏ hàng
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+        apiService.getCartsByUser(user).enqueue(new Callback<List<Cart>>() {
+            @Override
+            public void onResponse(Call<List<Cart>> call, Response<List<Cart>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    listCart.clear();
+                    listCart.addAll(response.body());
+                    Log.d("ProductAdapter", "Data retrieved successfully: " + listCart.size() + " items.");
+                } else {
+                    Log.e("ProductAdapter", "Error: " + response.code() + " " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Cart>> call, Throwable t) {
+                Log.e("ProductAdapter", "Error: " + t.getMessage());
+            }
+        });
+    }
+
     private void showDialogDelete(Product product) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage("Bạn có chắc muốn xóa sản phẩm");

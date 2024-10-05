@@ -54,11 +54,7 @@ import com.example.Sachpee.Service.ApiService;
 import com.example.Sachpee.Service.ConnectionReceiver;
 import com.example.Sachpee.databinding.ActivityMainBinding;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -69,8 +65,11 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-
-
+import io.socket.client.IO;
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
+import org.json.JSONObject;
+// TODO Done
 public class MainActivity extends AppCompatActivity{
     public static final String TAG = "MainActivity";
     public static final int MY_REQUEST_CODE = 10;
@@ -85,6 +84,8 @@ public class MainActivity extends AppCompatActivity{
     private TextView tvUserName;
     private TextView tvUserEmail;
 
+    private TextView cartBadgeTextView; // Khai báo biến thành viên
+
     private User user;
     private Partner partner;
 
@@ -94,6 +95,8 @@ public class MainActivity extends AppCompatActivity{
 
     ConnectionReceiver connectionReceiver = new ConnectionReceiver();
 
+    // Khởi tạo Socket.io client trong Activity
+    Socket mSocket;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,10 +108,10 @@ public class MainActivity extends AppCompatActivity{
         initUI();
         initViewModel();
         checkUser();
-        SharedPreferences preferences1 = getSharedPreferences("Number",MODE_PRIVATE);
+        SharedPreferences preferences1 = getSharedPreferences("Number", MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences1.edit();
         String number = "0";
-        editor.putString("number",""+number);
+        editor.putString("number", "" + number);
         editor.apply();
         getBill();
         mAppBarConfiguration = new AppBarConfiguration.Builder(
@@ -123,9 +126,213 @@ public class MainActivity extends AppCompatActivity{
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(mNavigationView, navController);
 
+        // Khởi tạo Socket.io client
+        try {
+            //  địa chỉ IP hoặc tên miền thực tế của server
+            mSocket = IO.socket("http://192.168.0.2:8080"); // Ví dụ: sử dụng địa chỉ IP cục bộ
+            mSocket.connect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
+
+
+        // Lắng nghe sự kiện cập nhật giỏ hàng
+        mSocket.on("cartUpdated", new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                Log.d("test1", "cartUpdated event received"); // Thêm log để kiểm tra
+                JSONObject data = (JSONObject) args[0];
+
+                // Cập nhật giao diện khi giỏ hàng thay đổi
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Cập nhật Badge giỏ hàng
+                        updateCartBadge();
+                    }
+                });
+            }
+        });
+    }
+
+
+
+    // Phương thức cập nhật Badge giỏ hàng
+    private void updateCartBadge() {
+        SharedPreferences preferences = getSharedPreferences("My_User", MODE_PRIVATE);
+        String user = preferences.getString("username", "");
+
+        // Sử dụng Retrofit để lấy dữ liệu từ MongoDB
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+        Call<List<Cart>> call = apiService.getCartsByUser(user);
+        call.enqueue(new Callback<List<Cart>>() {
+            @Override
+            public void onResponse(Call<List<Cart>> call, Response<List<Cart>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Cart> carts = response.body();
+                    cartBadgeTextView.setText(String.valueOf(carts.size()));
+                    cartBadgeTextView.setVisibility(carts.size() > 0 ? View.VISIBLE : View.GONE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Cart>> call, Throwable t) {
+                // Xử lý lỗi
+                Log.e("API_ERROR", t.getMessage());
+            }
+        });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        final MenuItem menuItem = menu.findItem(R.id.btn_Actionbar_cart);
+        View actionView = menuItem.getActionView();
+        MenuItem menuItem1 = menu.findItem(R.id.searchProduct);
+        menuItem1.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                startActivity(new Intent(MainActivity.this, SearchActivity.class));
+                return true;
+            }
+        });
+
+
+        cartBadgeTextView = actionView.findViewById(R.id.tv_CartActionItem_cart_badge); // Khởi tạo biến thành viên
+        cartBadgeTextView.setVisibility(View.GONE);                       //shape tăng số lượng khi thêm sản phẩm vào cart chưa hoạt động
+
+        SharedPreferences preferences = getSharedPreferences("My_User", MODE_PRIVATE);
+        String user = preferences.getString("username", "");
+
+        // Tạo danh sách tạm thời để lưu trữ giỏ hàng
+        List<Cart> list1 = new ArrayList<>();
+
+        // Sử dụng Retrofit để lấy dữ liệu từ MongoDB
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+        Call<List<Cart>> call = apiService.getCartsByUser(user);
+        call.enqueue(new Callback<List<Cart>>() {
+            @Override
+            public void onResponse(Call<List<Cart>> call, Response<List<Cart>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    list1.clear();
+                    list1.addAll(response.body()); // Lưu trữ giỏ hàng vào list1
+                    cartBadgeTextView.setText(String.valueOf(list1.size()));
+                    cartBadgeTextView.setVisibility(list1.size() > 0 ? View.VISIBLE : View.GONE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Cart>> call, Throwable t) {
+                // Xử lý lỗi
+                Log.e("API_ERROR", t.getMessage());
+            }
+        });
+
+        actionView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, CartActivity.class));
+            }
+        });
+
+        return true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mSocket != null) {
+            mSocket.disconnect();
+            mSocket.off("cartUpdated");
+        }
+    }
+
+    //TODO: thử chuyển method sang ProfileFragment
+    private final ActivityResultLauncher<Intent> mActivityResultLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult()
+                    , new ActivityResultCallback<ActivityResult>() {
+                        @Override
+                        public void onActivityResult(ActivityResult result) {
+                            if (result.getResultCode() == RESULT_OK) {
+                                Intent intent = result.getData();
+                                if (intent != null && intent.getData() != null) {
+                                    Uri uriImage = intent.getData();
+                                    Bitmap selectedImageBitmap = null;
+                                    try {
+                                        selectedImageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uriImage);
+                                        Log.d(TAG, "onActivityResult: " + selectedImageBitmap.toString());
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                    Log.d(TAG, "onActivityResult: ");
+                                    profileViewModel.setBitmapImageAvatar(selectedImageBitmap);
+                                }
+                            }
+                        }
+                    });
+    public void checkUser() {
+        SharedPreferences sharedPreferences = getSharedPreferences("My_User", MODE_PRIVATE);
+        String username = sharedPreferences.getString("username", "");
+        String userRule = sharedPreferences.getString("role", "");
+        String userId = sharedPreferences.getString("id", ""); // userId vẫn là String lúc lấy ra từ SharedPreferences se k loi
+
+        if (userRule.equals("admin")) {
+            Log.d(TAG, "checkUser: admin");
+            mNavigationView.setVisibility(View.VISIBLE);
+            mNavigationView.getMenu().findItem(R.id.nav_F).setVisible(false);
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+        } else if (userRule.equals("partner")) {
+            Log.d(TAG, "checkUser: partner");
+            // Chuyển đổi userId từ String sang int
+            int idPartner = Integer.parseInt(userId);
+            loadPartnerInfoById(idPartner); // truyền idPartner kiểu int
+            try {
+                setPartnerViewModelObserver();
+            } catch (Exception e) {
+                Log.e(TAG, "checkUser: ", e);
+            }
+
+        } else if (userRule.equals("user")) {
+            loadUserInfoById(username);
+            setUserViewModelObserver();
+            mNavigationView.setVisibility(View.GONE);
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            Log.d(TAG, "checkUser: user");
+        } else {
+            mNavigationView.setVisibility(View.GONE);
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        }
+    }
+
+
+    private void setPartnerViewModelObserver() throws Exception {
+        final Observer<Partner> partnerObserver = new Observer<Partner>() {
+            @Override
+            public void onChanged(Partner partner) {
+                Log.d(TAG, "onChanged: change user information");
+                tvUserEmail.setText(partner.getUserPartner());
+                tvUserName.setText(partner.getNamePartner());
+                SharedPreferences sharedPreferences = getSharedPreferences("My_User",MODE_PRIVATE);
+                String password = sharedPreferences.getString("password","");
+                if (!partner.getPasswordPartner().equals(password)) {
+                    sharedPreferences.edit().putString("password", partner.getPasswordPartner()).commit();
+                }
+                byte[] decodeString = Base64.decode(partner.getImgPartner(), Base64.DEFAULT);
+                Glide.with(MainActivity.this)
+                        .load(decodeString)
+                        .error(R.drawable.ic_avatar_default)
+                        .signature(new ObjectKey(Long.toString(System.currentTimeMillis())))
+                        .into(ivAvatar);
+                Log.d(TAG, "onChanged: " + partner.toString());
+            }
+
+        };
+        profileViewModel.getPartner().observe(this, partnerObserver);
     }
     public void loadUserInfoById(String phoneNumber) {
+        Log.d(TAG, "loadUserInfoById: ");
         Log.d(TAG, "loadUserInfoById: " + phoneNumber);
 
         // Khởi tạo Retrofit
@@ -155,124 +362,46 @@ public class MainActivity extends AppCompatActivity{
             }
         });
     }
-
-    //TODO: thử chuyển method sang ProfileFragment
-    private final ActivityResultLauncher<Intent> mActivityResultLauncher =
-            registerForActivityResult(
-                    new ActivityResultContracts.StartActivityForResult()
-                    , new ActivityResultCallback<ActivityResult>() {
-                        @Override
-                        public void onActivityResult(ActivityResult result) {
-                            if (result.getResultCode() == RESULT_OK) {
-                                Intent intent = result.getData();
-                                if (intent != null && intent.getData() != null) {
-                                    Uri uriImage = intent.getData();
-                                    Bitmap selectedImageBitmap = null;
-                                    try {
-                                        selectedImageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uriImage);
-                                        Log.d(TAG, "onActivityResult: " + selectedImageBitmap.toString());
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                    Log.d(TAG, "onActivityResult: ");
-                                    profileViewModel.setBitmapImageAvatar(selectedImageBitmap);
-                                }
-                            }
-                        }
-                    });
-    public void checkUser(){
-        SharedPreferences sharedPreferences = getSharedPreferences("My_User",MODE_PRIVATE);
-        String username = sharedPreferences.getString("username","");
-        String userRule = sharedPreferences.getString("role","");
-        String userId = sharedPreferences.getString("id", "");
-
-        if (userRule.equals("admin")){
-            Log.d(TAG, "checkUser: admin");
-            mNavigationView.setVisibility(View.VISIBLE);
-            mNavigationView.getMenu().findItem(R.id.nav_F).setVisible(false);
-            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-        } else if (userRule.equals("partner")) {
-            Log.d(TAG, "checkUser: partner");
-            loadPartnerInfoById(userId);
-            try {
-                setPartnerViewModelObserver();
-            } catch (Exception e) {
-                Log.e(TAG, "checkUser: ", e);
-            }
-
-        } else if (userRule.equals("user")) {
-            loadUserInfoById(username);
-            setUserViewModelObserver();
-            mNavigationView.setVisibility(View.GONE);
-            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-            Log.d(TAG, "checkUser: user");
-        } else {
-            mNavigationView.setVisibility(View.GONE);
-            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-        }
-
-    }
-
-    private void setPartnerViewModelObserver() throws Exception {
-        final Observer<Partner> partnerObserver = new Observer<Partner>() {
-            @Override
-            public void onChanged(Partner partner) {
-                Log.d(TAG, "onChanged: change user information");
-                tvUserEmail.setText(partner.getUserPartner());
-                tvUserName.setText(partner.getNamePartner());
-                SharedPreferences sharedPreferences = getSharedPreferences("My_User",MODE_PRIVATE);
-                String password = sharedPreferences.getString("password","");
-                if (!partner.getPasswordPartner().equals(password)) {
-                    sharedPreferences.edit().putString("password", partner.getPasswordPartner()).commit();
-                }
-                byte[] decodeString = Base64.decode(partner.getImgPartner(), Base64.DEFAULT);
-                Glide.with(MainActivity.this)
-                        .load(decodeString)
-                        .error(R.drawable.ic_avatar_default)
-                        .signature(new ObjectKey(Long.toString(System.currentTimeMillis())))
-                        .into(ivAvatar);
-                Log.d(TAG, "onChanged: " + partner.toString());
-            }
-
-        };
-        profileViewModel.getPartner().observe(this, partnerObserver);
-    }
-
-    private void loadPartnerInfoById(String id) {
+    private void loadPartnerInfoById(int idPartner) {
         partner = new Partner();
-        Log.d(TAG, "loadPartnerInfoById: " + id);
-        Log.d(TAG, "loadPartnerById: " + partner.toString());
-        final DatabaseReference rootReference = FirebaseDatabase.getInstance().getReference();
-        rootReference.child("Partner").child(id)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.exists()) {
-                            MainActivity.this.partner = snapshot.getValue(Partner.class);
-                            Log.d(TAG, "onDataChange: " + partner);
-                            try {
-                                showPartnerInformation();
-                            } catch ( Exception e) {
-                                Log.e(TAG, "onDataChange: ", e);
-                            }
-                        }
+        Log.d(TAG, "loadPartnerInfoById: " + idPartner);
 
-                    }
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+        // Gọi API để lấy thông tin partner
 
-                    private void showPartnerInformation() throws Exception{
-                        profileViewModel.setPartner(partner);
-                        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-                        mNavigationView.setVisibility(View.VISIBLE);
-                        mNavigationView.getMenu().findItem(R.id.nav_Product).setVisible(false);
-                        mNavigationView.getMenu().findItem(R.id.nav_Partner).setVisible(false);
-                    }
+        Call<Partner> call = apiService.getPartnerById(idPartner);
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e(TAG, "onCancelled: ", error.toException());
+        call.enqueue(new Callback<Partner>() {
+            @Override
+            public void onResponse(Call<Partner> call, Response<Partner> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    partner = response.body();
+                    Log.d(TAG, "onResponse: " + partner);
+                    try {
+                        showPartnerInformation();
+                    } catch (Exception e) {
+                        Log.e(TAG, "onResponse: ", e);
                     }
-                });
+                } else {
+                    Log.e(TAG, "onResponse: Không tìm thấy partner với id " + idPartner);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Partner> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+            }
+        });
     }
+
+    private void showPartnerInformation() throws Exception {
+        profileViewModel.setPartner(partner);
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+        mNavigationView.setVisibility(View.VISIBLE);
+        mNavigationView.getMenu().findItem(R.id.nav_Product).setVisible(false);
+        mNavigationView.getMenu().findItem(R.id.nav_Partner).setVisible(false);
+    }
+
 
     @Deprecated
     private void setUserViewModelObserver() {
@@ -312,56 +441,9 @@ public class MainActivity extends AppCompatActivity{
         tvUserEmail = mNavigationView.getHeaderView(0).findViewById(R.id.tv_MainActivity_userEmail);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        final MenuItem menuItem = menu.findItem(R.id.btn_Actionbar_cart);
-        View actionView = menuItem.getActionView();
-        MenuItem menuItem1 = menu.findItem(R.id.searchProduct);
-        menuItem1.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem menuItem) {
-                startActivity(new Intent(MainActivity.this,SearchActivity.class));
-                return true;
-            }
-        });
+ //3
 
-        TextView cartBadgeTextView = actionView.findViewById(R.id.tv_CartActionItem_cart_badge);
-        cartBadgeTextView.setVisibility(View.GONE);
-        SharedPreferences preferences = getSharedPreferences("My_User",MODE_PRIVATE);
-        String user = preferences.getString("username","");
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference ref = database.getReference("Cart");
-        List<Cart> list1 = new ArrayList<>();
-        ref.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                list1.clear();
-                for(DataSnapshot snap : snapshot.getChildren()){
-                    Cart cart = snap.getValue(Cart.class);
-                    if (cart.getUserClient().equals(user)) {
-                        list1.add(cart);
 
-                    }
-                }
-                cartBadgeTextView.setText(String.valueOf(list1.size()));
-                cartBadgeTextView.setVisibility(list1.size() > 0 ? View.VISIBLE : View.GONE);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-
-        actionView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, CartActivity.class));
-            }
-        });
-        return true;
-    }
     @Override
     public boolean onSupportNavigateUp() {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
@@ -369,10 +451,8 @@ public class MainActivity extends AppCompatActivity{
                 || super.onSupportNavigateUp();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
+
+
     private void logout() {
         SharedPreferences sharedPreferences = getSharedPreferences("My_User",MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -402,43 +482,47 @@ public class MainActivity extends AppCompatActivity{
         mActivityResultLauncher.launch(Intent.createChooser(intent, "Select picture"));
         Log.d(TAG, "openGallery: openGallery method");
     }
-    public void getBill(){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Bill");
+    public void getBill() {
         SharedPreferences preferences = getSharedPreferences("My_User", Context.MODE_PRIVATE);
-        String user = preferences.getString("username","");
-        reference.addValueEventListener(new ValueEventListener() {
+        String user = preferences.getString("username", "");
+
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+
+        Call<List<Bill>> call = apiService.getBillsByStatusNo(user);
+        call.enqueue(new Callback<List<Bill>>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                listBill.clear();
-                for (DataSnapshot snap : snapshot.getChildren()){
-                    Bill bill = snap.getValue(Bill.class);
-                    if (user.equals(bill.getIdPartner()) && bill.getStatus().equals("No")) {
-                        listBill.add(bill);
-                    }else if (user.equals(bill.getIdClient()) && bill.getStatus().equals("No")){
-                        listBill.add(bill);
+            public void onResponse(Call<List<Bill>> call, Response<List<Bill>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    listBill.clear();
+                    listBill.addAll(response.body());
+
+                    SharedPreferences preferences1 = getSharedPreferences("Number", MODE_PRIVATE);
+                    int number = Integer.parseInt(preferences1.getString("number", ""));
+                    Log.d("CartBadge", "Current number from preferences: " + number);
+
+                    if (listBill.size() > number) {
+                        Log.d("CartBadge", "New bill count is greater, updating badge");
+                        notification();
+                        SharedPreferences.Editor editor = preferences1.edit();
+                        editor.putString("number", String.valueOf(listBill.size()));
+                        editor.apply();
+                        Log.d("CartBadge", "Updated number: " + listBill.size());
+                    } else {
+                        Log.d("CartBadge", "Bill count is not greater, no update needed");
+                        SharedPreferences.Editor editor = preferences1.edit();
+                        editor.putString("number", String.valueOf(listBill.size()));
+                        editor.apply();
                     }
-                }
-                SharedPreferences preferences1 = getSharedPreferences("Number",MODE_PRIVATE);
-                int number = Integer.parseInt(preferences1.getString("number",""));
-                if (listBill.size()>number ){
-                    notification();
-                    SharedPreferences.Editor editor = preferences1.edit();
-                    editor.putString("number", String.valueOf(listBill.size()));
-                    editor.apply();
-                }else {
-                    SharedPreferences.Editor editor = preferences1.edit();
-                    editor.putString("number", String.valueOf(listBill.size()));
-                    editor.apply();
                 }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
+            public void onFailure(Call<List<Bill>> call, Throwable t) {
+                Log.e("getBill", "onFailure: " + t.getMessage());
             }
         });
     }
+
 
     public  void notification(){
         String CHANNEL_ID="1234";
