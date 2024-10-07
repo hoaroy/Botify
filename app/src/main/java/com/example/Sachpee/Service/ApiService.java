@@ -37,7 +37,7 @@ public interface ApiService {
     Call<List<Bill>> getBillsByStatusNo(@Path("user") String user);
 
     @POST("/bills/addBill")
-    Call<Bill> addBill(@Body Bill bill);
+    Call<Void> addBill(@Body Bill bill);
 
     @DELETE("cart/{idCart}")
     Call<Void> deleteCartItem(@Path("idCart") int idCart);

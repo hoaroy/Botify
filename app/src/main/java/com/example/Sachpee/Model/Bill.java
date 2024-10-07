@@ -1,8 +1,24 @@
 package com.example.Sachpee.Model;
 
+import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
+
 public class Bill {
     private int idBill,total;
     private String dayOut,status,idClient,timeOut,idPartner;
+
+
+    @SerializedName("Cart")
+    private List<Cart> Cart;
+
+    public List<Cart> getCart() {
+        return Cart;
+    }
+
+    public void setCart(List<Cart> cart) {
+        Cart = cart;
+    }
 
     public Bill() {
     }
