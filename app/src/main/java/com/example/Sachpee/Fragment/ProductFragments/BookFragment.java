@@ -55,7 +55,7 @@ import retrofit2.Response;
 
 
 public class BookFragment extends Fragment {
-    private List<Product> listFood;
+    private List<Product> listBook;
     private RecyclerView rvBook;
     private LinearLayoutManager linearLayoutManager;
     private ProductAdapter adapter;
@@ -107,8 +107,8 @@ public class BookFragment extends Fragment {
         getProductPartner(new ProductPartnerCallback() {
             @Override
             public void onProductsLoaded(List<Product> products) {
-                listFood = products; // Cập nhật danh sách sản phẩm
-                adapter = new ProductAdapter(listFood, fragment, getContext()); // Khởi tạo adapter với danh sách mới
+                listBook = products; // Cập nhật danh sách sản phẩm
+                adapter = new ProductAdapter(listBook, fragment, getContext()); // Khởi tạo adapter với danh sách mới
                 rvBook.setAdapter(adapter); // Đặt adapter cho RecyclerView
             }
         });

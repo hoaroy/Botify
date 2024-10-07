@@ -76,40 +76,39 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.viewHolder> {
             }
         });
 
-        holder.card_bill.setOnClickListener(view -> {
-            if (!role.equals("user")) {
-                if (holder.btn_updateStatusBill.getVisibility() == View.GONE) {
-                    holder.btn_updateStatusBill.setVisibility(View.VISIBLE);
-                } else {
-                    holder.btn_updateStatusBill.setVisibility(View.GONE);
-                }
-            }
-            if (bill.getStatus().equals("Yes")) {
-                holder.btn_updateStatusBill.setVisibility(View.GONE);
-            }
-        });
 
         holder.btn_updateStatusBill.setOnClickListener(view -> {
             // Chuyển idBill sang kiểu String nếu cần thiết
             updateBillStatus(String.valueOf(bill.getIdBill())); // Chuyển đổi int sang String
         });
 
-        // Hiển thị hoặc ẩn btn_paymentBill_item dựa trên vai trò
         holder.card_bill.setOnClickListener(view -> {
-            if (role.equals("user")) {
-                if (holder.btn_paymentBill.getVisibility() == View.GONE) {
-                    holder.btn_paymentBill.setVisibility(View.VISIBLE);
-                } else {
-                    holder.btn_paymentBill.setVisibility(View.GONE);
-                }
-            }
-            if (bill.getStatus().equals("Yes")) {
-                holder.btn_paymentBill.setVisibility(View.GONE);
-            }
+            handleButtonVisibility(holder, role, bill);
         });
+
+
     }
 
+    private void handleButtonVisibility(viewHolder holder, String role, Bill bill) {
+        if (!role.equals("user")) {
+            if (holder.btn_updateStatusBill.getVisibility() == View.GONE) {
+                holder.btn_updateStatusBill.setVisibility(View.VISIBLE);
+            } else {
+                holder.btn_updateStatusBill.setVisibility(View.GONE);
+            }
+        } else {
+            if (holder.btn_paymentBill.getVisibility() == View.GONE) {
+                holder.btn_paymentBill.setVisibility(View.VISIBLE);
+            } else {
+                holder.btn_paymentBill.setVisibility(View.GONE);
+            }
+        }
 
+        if (bill.getStatus().equals("Yes")) {
+            holder.btn_updateStatusBill.setVisibility(View.GONE);
+            holder.btn_paymentBill.setVisibility(View.GONE);
+        }
+    }
     private void getAllCart(int idBill, RecyclerView recyclerView, TextView tvName) {
         Call<List<Cart>> call = apiService.getCartsByBillId(idBill);
         call.enqueue(new Callback<List<Cart>>() {

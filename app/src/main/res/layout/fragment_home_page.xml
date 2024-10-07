@@ -410,7 +410,7 @@
                 </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/card_Top_Fruit"
+                    android:id="@+id/card_Top_Kinhte"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="30dp"
@@ -449,7 +449,7 @@
                         </LinearLayout>
 
                         <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rv_FruitTop_Home"
+                            android:id="@+id/rv_KinhteTop_Home"
                             android:layout_width="match_parent"
                             android:layout_height="200dp"
                             android:visibility="gone" />
@@ -458,7 +458,7 @@
                 </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/card_Top_Meat"
+                    android:id="@+id/card_Top_Tamly"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="30dp"
@@ -497,7 +497,7 @@
                         </LinearLayout>
 
                         <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rv_MeatTop_Home"
+                            android:id="@+id/rv_TamlyTop_Home"
                             android:layout_width="match_parent"
                             android:layout_height="200dp"
                             android:visibility="gone" />
@@ -505,7 +505,7 @@
                 </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/card_Top_Food"
+                    android:id="@+id/card_Top_Book"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="30dp"
@@ -544,7 +544,7 @@
                         </LinearLayout>
 
                         <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rv_FoodTop_Home"
+                            android:id="@+id/rv_BookTop_Home"
                             android:layout_width="match_parent"
                             android:layout_height="200dp"
                             android:visibility="gone" />

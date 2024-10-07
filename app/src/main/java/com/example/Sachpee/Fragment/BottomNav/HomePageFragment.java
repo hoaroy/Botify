@@ -48,19 +48,19 @@ public class HomePageFragment extends Fragment {
     private List<ProductTop> productToplistVanhoc = new ArrayList<>();
     private List<ProductTop> productToplistTamly= new ArrayList<>();
     private List<ProductTop> productToplistKinhte= new ArrayList<>();
-    private List<ProductTop> productTopListFood= new ArrayList<>();
+    private List<ProductTop> productToplistBook= new ArrayList<>();
     private List<Product> listVanhoc = new ArrayList<>();
     private List<Product> listTamly= new ArrayList<>();
     private List<Product> listKinhte= new ArrayList<>();
-    private List<Product> listFood= new ArrayList<>();
+    private List<Product> listBook= new ArrayList<>();
     private List<Product> listProduct = new ArrayList<>();
     ProductAdapter adapter;
 
     CardView card_vanhoc_home,card_kinhte_home,card_tamly_home,card_giaoduc_home;
 
-    CardView card_trending_home,card_Top_Fruit,card_Top_Meat,card_Top_Food;
+    CardView card_trending_home,card_Top_Kinhte,card_Top_Tamly,card_Top_Book;
 
-    RecyclerView rv_trending_home,rv_FruitTop_Home,rv_MeatTop_Home,rv_FoodTop_Home;
+    RecyclerView rv_trending_home,rv_KinhteTop_Home,rv_TamlyTop_Home,rv_BookTop_Home;
 
     ImageView arrow1,arrow2,arrow3,arrow4;
     private ProductFragment fragment = new ProductFragment();
@@ -107,14 +107,14 @@ public class HomePageFragment extends Fragment {
         card_giaoduc_home = view.findViewById(R.id.card_giaoduc_home);
 
         card_trending_home = view.findViewById(R.id.card_trending_home);
-        card_Top_Fruit = view.findViewById(R.id.card_Top_Fruit);
-        card_Top_Meat = view.findViewById(R.id.card_Top_Meat);
-        card_Top_Food = view.findViewById(R.id.card_Top_Food);
+        card_Top_Kinhte = view.findViewById(R.id.card_Top_Kinhte);
+        card_Top_Tamly = view.findViewById(R.id.card_Top_Tamly);
+        card_Top_Book = view.findViewById(R.id.card_Top_Book);
 
         rv_trending_home = view.findViewById(R.id.rv_trending_home);
-        rv_FruitTop_Home = view.findViewById(R.id.rv_FruitTop_Home);
-        rv_MeatTop_Home = view.findViewById(R.id.rv_MeatTop_Home);
-        rv_FoodTop_Home = view.findViewById(R.id.rv_FoodTop_Home);
+        rv_KinhteTop_Home = view.findViewById(R.id.rv_KinhteTop_Home);
+        rv_TamlyTop_Home = view.findViewById(R.id.rv_TamlyTop_Home);
+        rv_BookTop_Home = view.findViewById(R.id.rv_BookTop_Home);
         card_vanhoc_home.setOnClickListener(view1 -> {
             fragmentManager.beginTransaction().replace(R.id.frame_Home, new VanhocFragment(),null).addToBackStack(null).commit();
 
@@ -135,15 +135,15 @@ public class HomePageFragment extends Fragment {
         card_trending_home.setOnClickListener(view1 -> {
             onClickItemCart(listVanhoc,rv_trending_home);
         });
-        card_Top_Fruit.setOnClickListener(view1 -> {
-            onClickItemCart(listKinhte,rv_FruitTop_Home);
+        card_Top_Kinhte.setOnClickListener(view1 -> {
+            onClickItemCart(listKinhte,rv_KinhteTop_Home);
         });
-        card_Top_Meat.setOnClickListener(view1 -> {
-            onClickItemCart(listTamly,rv_MeatTop_Home);
+        card_Top_Tamly.setOnClickListener(view1 -> {
+            onClickItemCart(listTamly,rv_TamlyTop_Home);
         });
-        card_Top_Food.setOnClickListener(view1 -> {
+        card_Top_Book.setOnClickListener(view1 -> {
 
-            onClickItemCart(listFood,rv_FoodTop_Home);
+            onClickItemCart(listBook,rv_BookTop_Home);
 
         });
 
@@ -162,7 +162,7 @@ public class HomePageFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     // Xóa sạch danh sách trước khi thêm mới
                     productToplistVanhoc.clear();
-                    productTopListFood.clear();
+                    productToplistBook.clear();
                     productToplistKinhte.clear();
                     productToplistTamly.clear();
 
@@ -176,7 +176,7 @@ public class HomePageFragment extends Fragment {
                         } else if (top.getIdCategory() == 3) {
                             productToplistTamly.add(top);
                         } else {
-                            productTopListFood.add(top);
+                            productToplistBook.add(top);
                         }
                     }
 
@@ -185,7 +185,7 @@ public class HomePageFragment extends Fragment {
                     Log.d("getTopProduct", "Sản phẩm văn học: " + productToplistVanhoc.size() +
                             ", Kinh tế: " + productToplistKinhte.size() +
                             ", Tâm lý: " + productToplistTamly.size() +
-                            ", Đồ ăn: " + productTopListFood.size());
+                            ", Đồ ăn: " + productToplistBook.size());
                 } else {
                     Log.e("getTopProduct", "Phản hồi không thành công: " + response.code());
                 }
@@ -211,7 +211,7 @@ public class HomePageFragment extends Fragment {
                     listTamly.clear();
                     listKinhte.clear();
                     listVanhoc.clear();
-                    listFood.clear();
+                    listBook.clear();
                     listProduct.clear();  // Làm sạch danh sách product
 
                     // Lặp qua danh sách sản phẩm nhận được từ API
@@ -223,20 +223,20 @@ public class HomePageFragment extends Fragment {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         Collections.sort(productToplistVanhoc, Comparator.comparing(ProductTop::getAmountProduct).reversed());
                         Collections.sort(productToplistKinhte, Comparator.comparing(ProductTop::getAmountProduct).reversed());
-                        Collections.sort(productTopListFood, Comparator.comparing(ProductTop::getAmountProduct).reversed());
+                        Collections.sort(productToplistBook, Comparator.comparing(ProductTop::getAmountProduct).reversed());
                         Collections.sort(productToplistTamly, Comparator.comparing(ProductTop::getAmountProduct).reversed());
                     }
 
                     // Thêm các sản phẩm vào danh sách tương ứng
                     add(productToplistVanhoc, listProduct, listVanhoc);
                     add(productToplistKinhte, listProduct, listKinhte);
-                    add(productTopListFood, listProduct, listFood);
+                    add(productToplistBook, listProduct, listBook);
                     add(productToplistTamly, listProduct, listTamly);
 
                     // Thực hiện các xử lý bổ sung với các danh sách đã lọc
                     collections(listVanhoc);
                     collections(listKinhte);
-                    collections(listFood);
+                    collections(listBook);
                     collections(listTamly);
 
                     // Cập nhật adapter

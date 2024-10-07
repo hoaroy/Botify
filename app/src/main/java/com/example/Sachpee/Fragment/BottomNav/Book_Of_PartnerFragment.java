@@ -45,7 +45,7 @@ public class Book_Of_PartnerFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_book__of__partner, container, false);
         food_of_partner_recyclerView = view.findViewById(R.id.food_of_partner_recyclerView);
 
-        listProduct = loadListFood();
+        listProduct = loadlistBook();
         linearLayoutManager = new LinearLayoutManager(getContext());
         food_of_partner_recyclerView.setLayoutManager(linearLayoutManager);
         adapter = new ProductAdapter(listProduct,fragment,getContext());
@@ -55,11 +55,11 @@ public class Book_Of_PartnerFragment extends Fragment {
         return view;
     }
 
-    private List<Product> loadListFood() {
+    private List<Product> loadlistBook() {
         // Lấy đối tác từ SharedPreferences
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("Partner", Context.MODE_PRIVATE);
         String partner = sharedPreferences.getString("partner", "");
-        Log.d("loadListFood", "Partner: " + partner);
+        Log.d("loadlistBook", "Partner: " + partner);
 
 
         ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
@@ -80,15 +80,15 @@ public class Book_Of_PartnerFragment extends Fragment {
                     }
 
                     adapter.notifyDataSetChanged();
-                    Log.d("loadListFood", "Số lượng sản phẩm hiển thị: " + listProduct.size());
+                    Log.d("loadlistBook", "Số lượng sản phẩm hiển thị: " + listProduct.size());
                 } else {
-                    Log.e("loadListFood", "Phản hồi không thành công: " + response.code());
+                    Log.e("loadlistBook", "Phản hồi không thành công: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call<List<Product>> call, Throwable t) {
-                Log.e("loadListFood", "Lỗi khi gọi API: " + t.getMessage());
+                Log.e("loadlistBook", "Lỗi khi gọi API: " + t.getMessage());
             }
         });
 
