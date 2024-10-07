@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.view.View;
+import android.widget.Toast;
 
 import com.example.Sachpee.Adapter.CartAdapter;
 import com.example.Sachpee.Model.Bill;
@@ -26,14 +27,17 @@ import com.example.Sachpee.Model.Voucher;
 import com.example.Sachpee.R;
 import com.example.Sachpee.Service.ApiClient;
 import com.example.Sachpee.Service.ApiService;
-  
+import com.google.gson.Gson;
 
+
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -183,51 +187,100 @@ public class CartActivity extends AppCompatActivity {
         return list1;
     }
 
-    // Gọi API với Retrofit
+
     public void addBill() {
         Bill bill = new Bill();
         SharedPreferences preferences = getSharedPreferences("My_User", MODE_PRIVATE);
         String user = preferences.getString("username", "");
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        // Lấy ngày và giờ hiện tại
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         String date = dateFormat.format(Calendar.getInstance().getTime());
-        SimpleDateFormat timeFormat = new SimpleDateFormat("k:mm");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
         String time = timeFormat.format(Calendar.getInstance().getTime());
 
-        // Thiết lập thông tin Bill
+        Log.d(TAG, "addBill: Starting to add a new bill for user: " + user);
+
+        // Đặt các thuộc tính cho Bill
+        if (listBill.size() == 0) {
+            bill.setIdBill(1);
+        } else {
+            int lastIndex = listBill.size() - 1;
+            int newId = listBill.get(lastIndex).getIdBill() + 1;
+            bill.setIdBill(newId);
+        }
         bill.setIdClient(user);
         bill.setDayOut(date);
         bill.setTimeOut(time);
-        bill.setIdPartner(list.get(0).getIdPartner());
-        bill.setTotal(Integer.parseInt(tv1.getText().toString()));
 
-        if (user.equals("admin")) {
-            bill.setStatus("Yes");
+        if (list.size() > 0) {
+            bill.setIdPartner(list.get(0).getIdPartner());
         } else {
-            bill.setStatus("No");
+            bill.setIdPartner(""); // Hoặc một giá trị mặc định nào đó
         }
 
-        Log.d(TAG, "addBill: Sending bill for user: " + user);
-        // Gọi API qua Retrofit để gửi bill và list (giỏ hàng)
-        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
-        Call<Bill> call = apiService.addBill(bill);
+        try {
+            bill.setTotal(Integer.parseInt(tv1.getText().toString()));
+        } catch (NumberFormatException e) {
+            Log.e(TAG, "addBill: Invalid total value.", e);
+            return;
+        }
 
-        call.enqueue(new Callback<Bill>() {
+        bill.setStatus(user.equals("admin") ? "Yes" : "No");
+
+        // Đặt dữ liệu Cart
+        List<Cart> cartItems = new ArrayList<>();
+        for (Cart cart : list) { //  'list' chứa các đối tượng Cart
+            cartItems.add(cart);
+        }
+        bill.setCart(cartItems);
+
+        Log.d(TAG, "addBill: Creating bill with ID: " + bill.getIdBill() + " and data: " + bill.toString());
+
+        // Log JSON payload để kiểm tra
+        Gson gson = new Gson();
+        String jsonPayload = gson.toJson(bill);
+        Log.d(TAG, "addBill: JSON Payload: " + jsonPayload);
+
+        // Khởi tạo Retrofit và gọi API
+        ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+        Call<Void> call = apiService.addBill(bill);
+
+        call.enqueue(new Callback<Void>() {
             @Override
-            public void onResponse(Call<Bill> call, Response<Bill> response) {
+            public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
-                    Log.d(TAG, "onResponse: Bill created successfully.");
+                    Log.d(TAG, "addBill: Bill successfully added with ID: " + bill.getIdBill());
+                    // Thực hiện các hành động sau khi thành công nếu cần, ví dụ:
+                    // deleteCart();
+                    // Show thông báo cho người dùng
+                    Toast.makeText(CartActivity.this, "Đặt hàng thành công!", Toast.LENGTH_SHORT).show();
+                    // Reset UI hoặc chuyển hướng
+                    startActivity(new Intent(CartActivity.this, MainActivity.class));
+                    finish();
                 } else {
-                    Log.e(TAG, "onResponse: Failed to create bill. Response code: " + response.code());
+                    try {
+                        // Đọc phản hồi lỗi
+                        String errorBody = response.errorBody().string();
+                        Log.e(TAG, "addBill: Failed to add bill. Response code: " + response.code() + ". Error: " + errorBody);
+                        // Hiển thị thông báo lỗi cho người dùng
+                        Toast.makeText(CartActivity.this, "Đặt hàng thất bại: " + errorBody, Toast.LENGTH_LONG).show();
+                    } catch (IOException e) {
+                        Log.e(TAG, "addBill: Failed to read error response.", e);
+                        Toast.makeText(CartActivity.this, "Đặt hàng thất bại.", Toast.LENGTH_LONG).show();
+                    }
                 }
             }
 
             @Override
-            public void onFailure(Call<Bill> call, Throwable t) {
-                Log.e(TAG, "onFailure: Error: " + t.getMessage());
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e(TAG, "addBill: Failed to add bill. Error: " + t.getMessage(), t);
+                Toast.makeText(CartActivity.this, "Đặt hàng thất bại: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
-    } //TODO CHECK THIS LATE
+    }
+
+
 
     public void deleteCart() {
         ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);

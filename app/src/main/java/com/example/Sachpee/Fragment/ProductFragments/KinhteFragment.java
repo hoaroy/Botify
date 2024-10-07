@@ -63,7 +63,7 @@ public class KinhteFragment extends Fragment {
         progressDialog.show();
 
         ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
-        Call<List<Product>> call = apiService.getAllProducts(); // Giả định rằng API trả về tất cả sản phẩm
+        Call<List<Product>> call = apiService.getAllProducts(); //  API trả về tất cả sản phẩm
 
         call.enqueue(new Callback<List<Product>>() {
             @Override
