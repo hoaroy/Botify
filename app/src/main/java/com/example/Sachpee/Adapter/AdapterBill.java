@@ -50,6 +50,7 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.viewHolder> {
         return new viewHolder(view);
     }
 
+
     @Override
     public void onBindViewHolder(@NonNull viewHolder holder, int position) {
         SharedPreferences preferences = context.getSharedPreferences("My_User", Context.MODE_PRIVATE);
@@ -57,7 +58,6 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.viewHolder> {
         Bill bill = list.get(position);
 
         // Gọi phương thức để lấy danh sách Cart
-
         getAllCart(bill.getIdBill(), holder.rvItemOrder, holder.tvNameClient);
 
         holder.tvidBill.setText("Mã HD :" + bill.getIdBill());
@@ -93,7 +93,22 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.viewHolder> {
             // Chuyển idBill sang kiểu String nếu cần thiết
             updateBillStatus(String.valueOf(bill.getIdBill())); // Chuyển đổi int sang String
         });
+
+        // Hiển thị hoặc ẩn btn_paymentBill_item dựa trên vai trò
+        holder.card_bill.setOnClickListener(view -> {
+            if (role.equals("user")) {
+                if (holder.btn_paymentBill.getVisibility() == View.GONE) {
+                    holder.btn_paymentBill.setVisibility(View.VISIBLE);
+                } else {
+                    holder.btn_paymentBill.setVisibility(View.GONE);
+                }
+            }
+            if (bill.getStatus().equals("Yes")) {
+                holder.btn_paymentBill.setVisibility(View.GONE);
+            }
+        });
     }
+
 
     private void getAllCart(int idBill, RecyclerView recyclerView, TextView tvName) {
         Call<List<Cart>> call = apiService.getCartsByBillId(idBill);
@@ -151,7 +166,7 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.viewHolder> {
             private TextView tvidBill,tvNameClient,tvTotal, tvTime, tvDay,tvPhone;
             private LinearLayout linearLayout_item_product;
             private ImageView img_drop_up;
-            private Button btn_updateStatusBill;
+            private Button btn_updateStatusBill, btn_paymentBill;
             private RecyclerView rvItemOrder;
             private CardView card_bill;
 
@@ -163,6 +178,7 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.viewHolder> {
                 linearLayout_item_product = itemView.findViewById(R.id.linear_layout_item_product);
                 img_drop_up = itemView.findViewById(R.id.img_drop_up);
                 btn_updateStatusBill = itemView.findViewById(R.id.btn_updateStatusBill_item);
+                btn_paymentBill = itemView.findViewById(R.id.btn_paymentBill_item);
                 rvItemOrder = itemView.findViewById(R.id.rv_order);
                 card_bill = itemView.findViewById(R.id.card_bill);
                 tvTime = itemView.findViewById(R.id.tv_time_item);

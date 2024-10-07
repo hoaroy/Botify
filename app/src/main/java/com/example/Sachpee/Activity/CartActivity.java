@@ -216,7 +216,7 @@ public class CartActivity extends AppCompatActivity {
         if (list.size() > 0) {
             bill.setIdPartner(list.get(0).getIdPartner());
         } else {
-            bill.setIdPartner(""); // Hoặc một giá trị mặc định nào đó
+            bill.setIdPartner("admin"); // Hoặc một giá trị mặc định nào đó
         }
 
         try {
