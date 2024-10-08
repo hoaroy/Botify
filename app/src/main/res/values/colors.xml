@@ -10,11 +10,12 @@
     <color name="search_text">#37474F</color>
     <color name="grey">#C8C5C5</color>
 
-    <color name="color_select_bottom_nav">#27912B</color>
+    <color name="color_select_bottom_nav">#AED6F1</color>
 
 
     <color name="searchBkg">#ECEFF1</color>
 
     <color name="price_color">#FF0000</color>
-    <color name="text_color">#9775FA</color>
+    <color name="text_color">#AED6F1
+    </color>
 </resources>

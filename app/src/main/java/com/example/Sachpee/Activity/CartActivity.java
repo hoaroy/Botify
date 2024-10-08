@@ -63,7 +63,7 @@ public class CartActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cart);
-        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#4ec4de")));
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#AED6F1")));
         getSupportActionBar().setTitle("Giỏ hàng");
         unitUi();
         btn_senBill.setOnClickListener(view -> {
