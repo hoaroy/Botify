@@ -3,6 +3,8 @@ package com.example.Sachpee.Service;
 import com.example.Sachpee.Model.Bill;
 import com.example.Sachpee.Model.Cart;
 import com.example.Sachpee.Model.Partner;
+import com.example.Sachpee.Model.PaymentRequest;
+import com.example.Sachpee.Model.PaymentResponse;
 import com.example.Sachpee.Model.Product;
 import com.example.Sachpee.Model.ProductTop;
 import com.example.Sachpee.Model.User;
@@ -111,5 +113,10 @@ public interface ApiService {
     // Phương thức lấy danh sách Bill theo idPartner (user) va status "yes"
     @GET("/bills/{idPartner}")
     Call<List<Bill>> getBillsByPartner(@Path("idPartner") String idPartner);
+
+
+    //payment
+    @POST("/zalopay/payment")
+    Call<PaymentResponse> createPayment(@Body PaymentRequest paymentRequest);
 }
 

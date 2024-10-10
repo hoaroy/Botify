@@ -74,7 +74,8 @@
                     android:hint="@string/password"/>
 
             </com.google.android.material.textfield.TextInputLayout>
-            
+
+
             <CheckBox
 
                 android:id="@+id/chk_sign_in_activity_remember"
