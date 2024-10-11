@@ -98,7 +98,8 @@ public interface ApiService {
 
 
     @PATCH("/bills/{idBill}/status")
-    Call<Void> updateBillStatus(@Path("idBill") String idBill, @Body String status);
+    Call<Void> updateBillStatus(@Path("idBill") String idBill, @Body Map<String, String> status);
+
 
     @PATCH("/partners/{idPartner}")
     Call<Void> updatePartner(@Path("id") int idPartner, @Body Map<String, Object> fields);

@@ -124,6 +124,21 @@
                     android:backgroundTint="#7FB3D5"/>
 
             </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    android:visibility="gone"
+                    android:id="@+id/btn_checkmap_order_item"
+                    android:layout_weight="1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Kiểm tra trạng thái đơn hàng"
+                    android:backgroundTint="#7FB3D5"/>
+
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

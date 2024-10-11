@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.Sachpee.Activity.PaymentWebViewActivity;
+import com.example.Sachpee.Activity.WebViewActivity;
 import com.example.Sachpee.Model.Bill;
 import com.example.Sachpee.Model.Cart;
 import com.example.Sachpee.Model.PaymentRequest;
@@ -36,7 +37,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -84,6 +87,11 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.ViewHolder> {
         });
 
         holder.btn_updateStatusBill.setOnClickListener(view -> {
+            // Cập nhật giao diện ngay lập tức
+            holder.btn_updateStatusBill.setText("Đang cập nhật...");
+            holder.btn_updateStatusBill.setEnabled(false);
+
+            // Gọi API để cập nhật trạng thái hóa đơn
             updateBillStatus(String.valueOf(bill.getIdBill()));
         });
 
@@ -93,6 +101,7 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.ViewHolder> {
 
         holder.btn_paymentBill.setOnClickListener(view -> {
             handlePayment(bill, holder);
+
         });
 
         // Thiết lập LinearLayoutManager cho RecyclerView
@@ -100,6 +109,21 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.ViewHolder> {
 
         // Lấy dữ liệu giỏ hàng và cập nhật RecyclerView
         getAllCart(bill.getIdBill(), holder.rvItemOrder);
+
+        // Tích hợp sự kiện vào btn_checkmap_order
+        holder.btn_checkmap_order.setOnClickListener(view -> {
+            String latitude = "10.762622";  // Tọa độ ví dụ
+            String longitude = "106.660172";  // Tọa độ ví dụ
+
+            // Tạo URL Google Maps
+            String mapUrl = "https://www.google.com/maps/search/?api=1&query=" + latitude + "," + longitude;
+
+            // Mở WebViewActivity và truyền URL Google Maps
+            Intent intent = new Intent(context, WebViewActivity.class);
+            intent.putExtra("MAP_URL", mapUrl);
+            context.startActivity(intent);
+        });
+
     }
 
 
@@ -113,6 +137,7 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.ViewHolder> {
         if (bill.getStatus().equals("Yes")) {
             holder.btn_updateStatusBill.setVisibility(View.GONE);
             holder.btn_paymentBill.setVisibility(View.GONE);
+            holder.btn_checkmap_order.setVisibility(View.VISIBLE);
         }
     }
 
@@ -140,7 +165,12 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.ViewHolder> {
     }
 
     private void updateBillStatus(String idBill) {
-        Call<Void> call = apiService.updateBillStatus(idBill, "Yes");
+        // Tạo body JSON dưới dạng Map
+        Map<String, String> statusUpdate = new HashMap<>();
+        statusUpdate.put("status", "Yes");
+
+        // Gọi API và gửi body JSON
+        Call<Void> call = apiService.updateBillStatus(idBill, statusUpdate);
         call.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
@@ -157,6 +187,7 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.ViewHolder> {
             }
         });
     }
+
 
 
     // AdapterBill.java (Phương thức handlePayment)
@@ -177,7 +208,8 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.ViewHolder> {
                         Intent intent = new Intent(context, PaymentWebViewActivity.class);
                         intent.putExtra("ORDER_URL", paymentResponse.getOrderUrl());
                         context.startActivity(intent);
-
+                        // Gọi API để cập nhật trạng thái hóa đơn
+                        updateBillStatus(String.valueOf(bill.getIdBill()));
 
                         new Handler().postDelayed(new Runnable() {
                             @Override
@@ -212,9 +244,6 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.ViewHolder> {
     }
 
 
-
-
-
     @Override
     public int getItemCount() {
         return list != null ? list.size() : 0;
@@ -224,7 +253,7 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.ViewHolder> {
         TextView tvidBill, tvNameClient, tvTotal, tvTime, tvDay, tvPhone;
         LinearLayout linearLayout_item_product;
         ImageView img_drop_up;
-        Button btn_updateStatusBill, btn_paymentBill;
+        Button btn_updateStatusBill, btn_paymentBill,btn_checkmap_order;
         RecyclerView rvItemOrder;
         CardView card_bill;
 
@@ -237,11 +266,13 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.ViewHolder> {
             img_drop_up = itemView.findViewById(R.id.img_drop_up);
             btn_updateStatusBill = itemView.findViewById(R.id.btn_updateStatusBill_item);
             btn_paymentBill = itemView.findViewById(R.id.btn_paymentBill_item);
+            btn_checkmap_order = itemView.findViewById(R.id.btn_checkmap_order_item);
             rvItemOrder = itemView.findViewById(R.id.rv_order);
             card_bill = itemView.findViewById(R.id.card_bill);
             tvTime = itemView.findViewById(R.id.tv_time_item);
             tvDay = itemView.findViewById(R.id.tv_day_item);
             tvNameClient = itemView.findViewById(R.id.tv_name_client_item);
+
         }
     }
 }
