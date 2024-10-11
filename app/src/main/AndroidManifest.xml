@@ -24,7 +24,7 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ThucPhamXanh"
+        android:theme="@style/Theme.Sachpee"
         tools:targetApi="31">
         <activity
             android:name="com.example.Sachpee.Activity.SearchActivity"
@@ -58,7 +58,7 @@
             android:name="com.example.Sachpee.Activity.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.ThucPhamXanh.NoActionBar">
+            android:theme="@style/Theme.Sachpee.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity{
         mSocket.on("cartUpdated", new Emitter.Listener() {
             @Override
             public void call(Object... args) {
-                Log.d("test1", "cartUpdated event received"); // Thêm log để kiểm tra
+                Log.d(TAG, "cartUpdated event received"); // Thêm log để kiểm tra
                 JSONObject data = (JSONObject) args[0];
 
                 // Cập nhật giao diện khi giỏ hàng thay đổi
@@ -188,19 +188,19 @@ public class MainActivity extends AppCompatActivity{
             // Thanh toán thành công
             Toast.makeText(this, "Thanh toán thành công!", Toast.LENGTH_LONG).show();
             // Chuyển đến Fragment hoặc cập nhật giao diện
-            navigateToYourFragment();
+            navigateToFragment();
         } else {
             // Thanh toán thất bại hoặc hủy
             Toast.makeText(this, "Thanh toán thất bại hoặc đã hủy.", Toast.LENGTH_LONG).show();
             // Chuyển đến Fragment hoặc cập nhật giao diện
-            navigateToYourFragment();
+            navigateToFragment();
         }
     }
 
-    private void navigateToYourFragment() {
-        // Sử dụng Navigation Component để chuyển đến Fragment
+    private void navigateToFragment() {
+        //  Navigation Component để chuyển đến Fragment
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        navController.navigate(R.id.nav_home); // Chuyển đến Fragment home
+        navController.navigate(R.id.nav_home);
     }
 
 

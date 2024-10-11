@@ -7,6 +7,7 @@ import com.example.Sachpee.Model.PaymentRequest;
 import com.example.Sachpee.Model.PaymentResponse;
 import com.example.Sachpee.Model.Product;
 import com.example.Sachpee.Model.ProductTop;
+import com.example.Sachpee.Model.StatusResponse;
 import com.example.Sachpee.Model.User;
 
 import java.util.List;
@@ -118,5 +119,8 @@ public interface ApiService {
     //payment
     @POST("/zalopay/payment")
     Call<PaymentResponse> createPayment(@Body PaymentRequest paymentRequest);
+
+    @GET("/zalopay/check-status-order/{idBill}")  // Đường dẫn tương ứng với API của bạn
+    Call<StatusResponse> checkOrderStatus(@Path("idBill") int idBill);
 }
 

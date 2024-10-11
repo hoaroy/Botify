@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.ThucPhamXanh" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.Sachpee" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">#AED6F1
         </item>
@@ -17,12 +17,12 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="Theme.ThucPhamXanh.NoActionBar">
+    <style name="Theme.Sachpee.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.ThucPhamXanh.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.Sachpee.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-    <style name="Theme.ThucPhamXanh.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="Theme.Sachpee.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>

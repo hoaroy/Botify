@@ -3,7 +3,9 @@ package com.example.Sachpee.Adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -90,7 +92,7 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.ViewHolder> {
         });
 
         holder.btn_paymentBill.setOnClickListener(view -> {
-            handlePayment(bill);
+            handlePayment(bill, holder);
         });
 
         // Thiết lập LinearLayoutManager cho RecyclerView
@@ -158,16 +160,13 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.ViewHolder> {
 
 
     // AdapterBill.java (Phương thức handlePayment)
-    private void handlePayment(Bill bill) {
-        // Lấy thông tin cần thiết từ bill
+    private void handlePayment(Bill bill, ViewHolder holder) {
         String appUser = bill.getIdClient();
         int amount = bill.getTotal();
         String description = "Payment for bill #" + bill.getIdBill();
 
-
         PaymentRequest paymentRequest = new PaymentRequest(appUser, amount, description);
 
-        // Gửi yêu cầu thanh toán tới server
         apiService.createPayment(paymentRequest).enqueue(new Callback<PaymentResponse>() {
             @Override
             public void onResponse(Call<PaymentResponse> call, Response<PaymentResponse> response) {
@@ -175,13 +174,20 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.ViewHolder> {
                     PaymentResponse paymentResponse = response.body();
                     if (paymentResponse.getReturnCode() == 1) {
                         Log.d("AdapterBill", "Payment successful: " + paymentResponse.getOrderUrl());
-                        // Mở PaymentWebViewActivity và truyền URL thanh toán
                         Intent intent = new Intent(context, PaymentWebViewActivity.class);
                         intent.putExtra("ORDER_URL", paymentResponse.getOrderUrl());
                         context.startActivity(intent);
 
+
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                holder.btn_paymentBill.setText("Đợi người bán xác nhận");
+                                holder.btn_paymentBill.setBackgroundColor(Color.GRAY);
+                                holder.btn_paymentBill.setEnabled(false);
+                            }
+                        }, 3000);
                     } else {
-                        // Xử lý khi thanh toán thất bại theo phản hồi từ server
                         Log.e("AdapterBill", "Payment failed: " + paymentResponse.getReturnMessage());
                         Toast.makeText(context, "Thanh toán thất bại: " + paymentResponse.getReturnMessage(), Toast.LENGTH_LONG).show();
                     }
@@ -204,6 +210,7 @@ public class AdapterBill extends RecyclerView.Adapter<AdapterBill.ViewHolder> {
             }
         });
     }
+
 
 
 
