@@ -8,8 +8,8 @@
         <domain includeSubdomains="true">localhost</domain>
         <domain includeSubdomains="true">http://192.168.0.3</domain>
         <domain includeSubdomains="true">192.168.0.3</domain>
-        <domain includeSubdomains="true">http://192.168.15.19</domain>
-        <domain includeSubdomains="true">192.168.15.19</domain>
+        <domain includeSubdomains="true">http://192.168.1.148</domain>
+        <domain includeSubdomains="true">192.168.1.148</domain>
     </domain-config>
     <base-config cleartextTrafficPermitted="false" />
 </network-security-config>
