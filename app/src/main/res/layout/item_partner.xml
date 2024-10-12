@@ -75,14 +75,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginRight="10dp"
                 android:text="Update"
-                android:backgroundTint="#03A9F4"/>
+                android:backgroundTint="#7FB3D5"/>
             <Button
                 android:visibility="gone"
                 android:id="@+id/btn_DeletePartner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Delete"
-                android:backgroundTint="#F44336"/>
+                android:backgroundTint="#7FB3D5"/>
 
         </LinearLayout>
     </LinearLayout>

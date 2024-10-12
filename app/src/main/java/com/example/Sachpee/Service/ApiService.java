@@ -3,8 +3,11 @@ package com.example.Sachpee.Service;
 import com.example.Sachpee.Model.Bill;
 import com.example.Sachpee.Model.Cart;
 import com.example.Sachpee.Model.Partner;
+import com.example.Sachpee.Model.PaymentRequest;
+import com.example.Sachpee.Model.PaymentResponse;
 import com.example.Sachpee.Model.Product;
 import com.example.Sachpee.Model.ProductTop;
+import com.example.Sachpee.Model.StatusResponse;
 import com.example.Sachpee.Model.User;
 
 import java.util.List;
@@ -95,7 +98,8 @@ public interface ApiService {
 
 
     @PATCH("/bills/{idBill}/status")
-    Call<Void> updateBillStatus(@Path("idBill") String idBill, @Body String status);
+    Call<Void> updateBillStatus(@Path("idBill") String idBill, @Body Map<String, String> status);
+
 
     @PATCH("/partners/{idPartner}")
     Call<Void> updatePartner(@Path("id") int idPartner, @Body Map<String, Object> fields);
@@ -111,5 +115,13 @@ public interface ApiService {
     // Phương thức lấy danh sách Bill theo idPartner (user) va status "yes"
     @GET("/bills/{idPartner}")
     Call<List<Bill>> getBillsByPartner(@Path("idPartner") String idPartner);
+
+
+    //payment
+    @POST("/zalopay/payment")
+    Call<PaymentResponse> createPayment(@Body PaymentRequest paymentRequest);
+
+    @GET("/zalopay/check-status-order/{idBill}")  // Đường dẫn tương ứng với API của bạn
+    Call<StatusResponse> checkOrderStatus(@Path("idBill") int idBill);
 }
 

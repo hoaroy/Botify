@@ -10,12 +10,12 @@
         tools:context=".Fragment.BottomNav.ChatFragment">
 
 
-
     <EditText
         android:id="@+id/nameInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter your name" />
+        android:hint="Enter your name"
+        android:minHeight="48dp" />
 
     <Button
         android:id="@+id/submitNameButton"
@@ -33,11 +33,12 @@
             android:padding="10dp"
             android:scrollbars="vertical" />
 
-        <EditText
-            android:id="@+id/messageInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Enter message" />
+    <EditText
+        android:id="@+id/messageInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter message"
+        android:minHeight="48dp" />
 
         <Button
             android:id="@+id/sendButton"

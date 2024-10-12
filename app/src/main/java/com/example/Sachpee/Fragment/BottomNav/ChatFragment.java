@@ -1,4 +1,5 @@
 package com.example.Sachpee.Fragment.BottomNav;
+
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,11 +12,16 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.example.Sachpee.R;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 
+import java.lang.ref.WeakReference;
 
 public class ChatFragment extends Fragment {
     private WebSocket webSocket;
@@ -38,10 +44,10 @@ public class ChatFragment extends Fragment {
         submitNameButton.setOnClickListener(v -> {
             userName = nameInput.getText().toString().trim();
             if (!userName.isEmpty()) {
-                initiateWebSocket(); // Chỉ kết nối khi tên đã được nhập
+                initiateWebSocket(); //  kết nối khi tên đã được nhập
                 nameInput.setVisibility(View.GONE);
                 submitNameButton.setVisibility(View.GONE);
-                chatOutput.append("Connecting as " + userName + "...\n");
+//                chatOutput.append("Connecting as " + userName + "...\n");
             }
         });
 
@@ -61,29 +67,78 @@ public class ChatFragment extends Fragment {
 
     private void initiateWebSocket() {
         OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder().url("ws://192.168.0.2:8080").build();
+        Request request = new Request.Builder().url("ws://192.168.15.19:8080").build();
         webSocket = client.newWebSocket(request, new WebSocketListener() {
+            private final WeakReference<ChatFragment> fragmentRef = new WeakReference<>(ChatFragment.this);
+
             @Override
             public void onOpen(@NonNull WebSocket webSocket, @NonNull okhttp3.Response response) {
-                getActivity().runOnUiThread(() -> chatOutput.append("Connected to server as " + userName + "\n"));
-                // Gửi tên người dùng sau khi kết nối
-                webSocket.send("{\"type\":\"setName\", \"name\":\"" + userName + "\"}");
+                ChatFragment fragment = fragmentRef.get();
+                if (fragment != null && fragment.isAdded()) {
+                    fragment.getActivity().runOnUiThread(() -> fragment.chatOutput.append("Connected to server as " + fragment.userName + "\n"));
+                    webSocket.send("{\"type\":\"setName\", \"name\":\"" + fragment.userName + "\"}");
+                }
             }
 
             @Override
             public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
-                getActivity().runOnUiThread(() -> chatOutput.append("Received: " + text + "\n"));
+                ChatFragment fragment = fragmentRef.get();
+                if (fragment != null && fragment.isAdded()) {
+                    fragment.getActivity().runOnUiThread(() -> {
+                        try {
+                            JSONObject message = new JSONObject(text);
+                            String type = message.getString("type");
+
+                            switch (type) {
+                                case "success":
+                                    //fragment.chatOutput.append("You have successfully connected.\n");
+                                    break;
+                                case "error":
+                                    String errorMessage = message.getString("message");
+                                    fragment.chatOutput.append("Error: " + errorMessage + "\n");
+                                    break;
+                                case "serverMessage":
+                                    String serverMessage = message.getString("message");
+                                    if (message.has("name")) {
+                                        String name = message.getString("name");
+                                        fragment.chatOutput.append(name + serverMessage + "\n");
+                                    } else {
+                                        fragment.chatOutput.append(serverMessage + "\n");
+                                    }
+                                    break;
+                                case "chat":
+                                    String sender = message.getString("sender");
+                                    String chatMessage = message.getString("message");
+                                    fragment.chatOutput.append(sender + ": " + chatMessage + "\n");
+                                    break;
+                                default:
+                                    fragment.chatOutput.append("Unknown message type: " + type + "\n");
+                                    break;
+                            }
+                        } catch (JSONException e) {
+                            fragment.chatOutput.append("Error parsing message: " + e.getMessage() + "\n");
+                        } catch (Exception e) {
+                            fragment.chatOutput.append("Unexpected error: " + e.getMessage() + "\n");
+                        }
+                    });
+                }
             }
 
             @Override
             public void onClosing(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
-                webSocket.close(1000, null);
-                getActivity().runOnUiThread(() -> chatOutput.append("Closing: " + reason + "\n"));
+                ChatFragment fragment = fragmentRef.get();
+                if (fragment != null && fragment.isAdded()) {
+                    webSocket.close(1000, null);
+                    fragment.getActivity().runOnUiThread(() -> fragment.chatOutput.append("Closing: " + reason + "\n"));
+                }
             }
 
             @Override
             public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, @Nullable okhttp3.Response response) {
-                getActivity().runOnUiThread(() -> chatOutput.append("Error: " + t.getMessage() + "\n"));
+                ChatFragment fragment = fragmentRef.get();
+                if (fragment != null && fragment.isAdded()) {
+                    fragment.getActivity().runOnUiThread(() -> fragment.chatOutput.append("Error: " + t.getMessage() + "\n"));
+                }
             }
         });
     }
@@ -93,8 +148,7 @@ public class ChatFragment extends Fragment {
         super.onDestroy();
         if (webSocket != null) {
             webSocket.close(1000, "App is closing");
+            webSocket = null;
         }
     }
 }
-
-

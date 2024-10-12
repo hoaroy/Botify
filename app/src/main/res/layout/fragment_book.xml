@@ -15,7 +15,7 @@
         android:id="@+id/fab_addBook_fragment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:backgroundTint="#FDD835"
+        android:backgroundTint="#7FB3D5"
         android:clickable="true"
         android:layout_gravity="bottom|right"
         android:layout_marginBottom="15dp"

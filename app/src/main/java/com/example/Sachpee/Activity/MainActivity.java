@@ -100,12 +100,23 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setSupportActionBar(binding.appBarMain.toolbar);
         initUI();
+
+        // Kiểm tra nếu Activity được mở qua Intent với dữ liệu từ URL
+        Intent intent = getIntent();
+        Uri data = intent.getData();
+
+        if (data != null) {
+            handlePaymentResult(data);
+        }
+
+
+        // setContentView(R.layout.activity_main);
+
         initViewModel();
         checkUser();
         SharedPreferences preferences1 = getSharedPreferences("Number", MODE_PRIVATE);
@@ -128,20 +139,18 @@ public class MainActivity extends AppCompatActivity{
 
         // Khởi tạo Socket.io client
         try {
-            //  địa chỉ IP hoặc tên miền thực tế của server
+            // Địa chỉ IP hoặc tên miền thực tế của server
             mSocket = IO.socket("http://192.168.0.2:8080"); // Ví dụ: sử dụng địa chỉ IP cục bộ
             mSocket.connect();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-
-
         // Lắng nghe sự kiện cập nhật giỏ hàng
         mSocket.on("cartUpdated", new Emitter.Listener() {
             @Override
             public void call(Object... args) {
-                Log.d("test1", "cartUpdated event received"); // Thêm log để kiểm tra
+                Log.d(TAG, "cartUpdated event received"); // Thêm log để kiểm tra
                 JSONObject data = (JSONObject) args[0];
 
                 // Cập nhật giao diện khi giỏ hàng thay đổi
@@ -156,6 +165,43 @@ public class MainActivity extends AppCompatActivity{
         });
     }
 
+
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // Khi Activity đã tồn tại và nhận được Intent mới
+        Uri data = intent.getData();
+        if (data != null) {
+            handlePaymentResult(data);
+        }
+    }
+
+    private void handlePaymentResult(Uri data) {
+        String status = data.getQueryParameter("status");
+        String appTransId = data.getQueryParameter("apptransid");
+
+        Log.d(TAG, "Payment Status: " + status);
+        Log.d(TAG, "Transaction ID: " + appTransId);
+
+        if ("1".equals(status)) {
+            // Thanh toán thành công
+            Toast.makeText(this, "Thanh toán thành công!", Toast.LENGTH_LONG).show();
+            // Chuyển đến Fragment hoặc cập nhật giao diện
+            navigateToFragment();
+        } else {
+            // Thanh toán thất bại hoặc hủy
+            Toast.makeText(this, "Thanh toán thất bại hoặc đã hủy.", Toast.LENGTH_LONG).show();
+            // Chuyển đến Fragment hoặc cập nhật giao diện
+            navigateToFragment();
+        }
+    }
+
+    private void navigateToFragment() {
+        //  Navigation Component để chuyển đến Fragment
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+        navController.navigate(R.id.nav_home);
+    }
 
 
     // Phương thức cập nhật Badge giỏ hàng

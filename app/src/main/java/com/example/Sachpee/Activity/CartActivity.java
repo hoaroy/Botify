@@ -63,7 +63,7 @@ public class CartActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cart);
-        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#4ec4de")));
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#AED6F1")));
         getSupportActionBar().setTitle("Giỏ hàng");
         unitUi();
         btn_senBill.setOnClickListener(view -> {
@@ -216,7 +216,7 @@ public class CartActivity extends AppCompatActivity {
         if (list.size() > 0) {
             bill.setIdPartner(list.get(0).getIdPartner());
         } else {
-            bill.setIdPartner(""); // Hoặc một giá trị mặc định nào đó
+            bill.setIdPartner("admin"); // Hoặc một giá trị mặc định nào đó
         }
 
         try {

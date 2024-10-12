@@ -41,7 +41,7 @@ public class OrderFragment extends Fragment {
                 switch (position){
                     case 0: tab.setText("Đơn hàng hiện tại");
                         break;
-                    case 1: tab.setText("Lịch sử");
+                    case 1: tab.setText("Đơn đã thanh toán");
                         break;
 
                 }

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.Sachpee">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
 
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -23,7 +23,7 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ThucPhamXanh"
+        android:theme="@style/Theme.Sachpee"
         tools:targetApi="31">
         <activity
             android:name="com.example.Sachpee.Activity.SearchActivity"
@@ -42,19 +42,35 @@
             android:name="com.example.Sachpee.Activity.IntroActivity"
             android:exported="false" />
         <activity
+            android:name="com.example.Sachpee.Activity.PaymentWebViewActivity"
+            android:exported="false"/>
+        <activity
             android:name="com.example.Sachpee.Activity.SplashActivity"
             android:exported="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+
+        <activity android:name="com.example.Sachpee.Activity.WebViewActivity" />
+
         <activity
             android:name="com.example.Sachpee.Activity.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.ThucPhamXanh.NoActionBar" />
+            android:theme="@style/Theme.Sachpee.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Định nghĩa custom scheme và host -->
+                <data android:scheme="yourapp" android:host="paymentresult" />
+            </intent-filter>
+        </activity>
+
     </application>
 
 </manifest>
