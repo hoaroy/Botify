@@ -6,8 +6,8 @@
         <domain includeSubdomains="true">192.168.0.2</domain>
         <domain includeSubdomains="true">http://192.168.0.2:8080</domain>
         <domain includeSubdomains="true">localhost</domain>
-        <domain includeSubdomains="true">http://192.168.0.3</domain>
-        <domain includeSubdomains="true">192.168.0.3</domain>
+        <domain includeSubdomains="true">http://172.20.10.4</domain>
+        <domain includeSubdomains="true">172.20.10.4</domain>
         <domain includeSubdomains="true">http://192.168.15.19</domain>
         <domain includeSubdomains="true">192.168.15.19</domain>
     </domain-config>

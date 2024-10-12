@@ -569,19 +569,23 @@
                     android:layout_marginTop="30dp"
                     android:backgroundTint="#E9EEF3"
 
-                    app:cardCornerRadius="15dp">
+                    app:cardCornerRadius="15dp"
+                    android:visibility="gone">
 
                     <LinearLayout
+
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="10dp"
                         android:layout_marginVertical="25dp"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:visibility="gone">
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:orientation="horizontal">
+                            android:orientation="horizontal"
+                            android:visibility="gone">
 
                             <TextView
                                 android:layout_width="330dp"
@@ -598,7 +602,7 @@
                                 android:layout_marginTop="5dp"
                                 android:backgroundTint="#F1EAEA"
                                 android:src="@drawable/ic_arrow_drop_up"
-                                android:visibility="visible" />
+                                android:visibility="gone" />
                         </LinearLayout>
 
                         <androidx.recyclerview.widget.RecyclerView
@@ -617,7 +621,8 @@
                     android:layout_marginTop="30dp"
                     android:backgroundTint="#E9EEF3"
 
-                    app:cardCornerRadius="15dp">
+                    app:cardCornerRadius="15dp"
+                    android:visibility="gone">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -629,7 +634,8 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:orientation="horizontal">
+                            android:orientation="horizontal"
+                            android:visibility="gone">
 
                             <TextView
                                 android:layout_width="330dp"
@@ -646,7 +652,7 @@
                                 android:layout_marginTop="5dp"
                                 android:backgroundTint="#F1EAEA"
                                 android:src="@drawable/ic_arrow_drop_up"
-                                android:visibility="visible" />
+                                android:visibility="gone" />
                         </LinearLayout>
 
                         <androidx.recyclerview.widget.RecyclerView
@@ -664,7 +670,8 @@
                     android:layout_marginTop="30dp"
                     android:backgroundTint="#E9EEF3"
 
-                    app:cardCornerRadius="15dp">
+                    app:cardCornerRadius="15dp"
+                    android:visibility="gone">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -676,7 +683,8 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:orientation="horizontal">
+                            android:orientation="horizontal"
+                            android:visibility="gone">
 
                             <TextView
                                 android:layout_width="330dp"
@@ -712,7 +720,8 @@
                     android:layout_marginTop="30dp"
                     android:backgroundTint="#E9EEF3"
 
-                    app:cardCornerRadius="15dp">
+                    app:cardCornerRadius="15dp"
+                    android:visibility="gone">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -724,7 +733,8 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:orientation="horizontal">
+                            android:orientation="horizontal"
+                            android:visibility="gone">
 
                             <TextView
                                 android:layout_width="330dp"
@@ -732,7 +742,8 @@
                                 android:text="Những loại sách Ngoại ngữ bán chạy nhất"
                                 android:textColor="@color/black"
                                 android:textSize="20sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"
+                                android:visibility="gone"/>
 
                             <ImageView
                                 android:id="@+id/arrow8"
@@ -741,7 +752,7 @@
                                 android:layout_marginTop="5dp"
                                 android:backgroundTint="#F1EAEA"
                                 android:src="@drawable/ic_arrow_drop_up"
-                                android:visibility="visible" />
+                                android:visibility="gone" />
                         </LinearLayout>
 
                         <androidx.recyclerview.widget.RecyclerView
