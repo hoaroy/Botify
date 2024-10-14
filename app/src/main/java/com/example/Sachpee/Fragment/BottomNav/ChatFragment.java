@@ -36,10 +36,10 @@ public class ChatFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
 
         messageInput = view.findViewById(R.id.messageInput);
-        nameInput = view.findViewById(R.id.nameInput); // EditText để nhập tên
+        nameInput = view.findViewById(R.id.nameInput);
         chatOutput = view.findViewById(R.id.chatOutput);
         Button sendButton = view.findViewById(R.id.sendButton);
-        Button submitNameButton = view.findViewById(R.id.submitNameButton); // Button để gửi tên
+        Button submitNameButton = view.findViewById(R.id.submitNameButton);
 
         submitNameButton.setOnClickListener(v -> {
             userName = nameInput.getText().toString().trim();
@@ -55,7 +55,15 @@ public class ChatFragment extends Fragment {
             String message = messageInput.getText().toString();
             if (!message.isEmpty() && !userName.isEmpty()) {
                 // Gửi message dưới dạng JSON
-                webSocket.send("{\"type\":\"chat\", \"text\":\"" + message + "\"}");
+                try {
+                    JSONObject jsonMessage = new JSONObject();
+                    jsonMessage.put("type", "chat");
+                    jsonMessage.put("text", message);
+                    webSocket.send(jsonMessage.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
                 messageInput.setText("");
             } else if (userName.isEmpty()) {
                 Toast.makeText(getActivity(), "Please enter your name first.", Toast.LENGTH_SHORT).show();
@@ -75,7 +83,7 @@ public class ChatFragment extends Fragment {
             public void onOpen(@NonNull WebSocket webSocket, @NonNull okhttp3.Response response) {
                 ChatFragment fragment = fragmentRef.get();
                 if (fragment != null && fragment.isAdded()) {
-                    fragment.getActivity().runOnUiThread(() -> fragment.chatOutput.append("Connected to server as " + fragment.userName + "\n"));
+                    fragment.getActivity().runOnUiThread(() -> fragment.chatOutput.append("")); //Connected to server as " + fragment.userName + "\n
                     webSocket.send("{\"type\":\"setName\", \"name\":\"" + fragment.userName + "\"}");
                 }
             }

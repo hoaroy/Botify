@@ -19,9 +19,7 @@ public class PaymentResponse {
     @SerializedName("order_url")
     private String orderUrl;
 
-    // Các trường khác tùy theo phản hồi của ZaloPay
 
-    // Getters và Setters
     public int getReturnCode() {
         return returnCode;
     }

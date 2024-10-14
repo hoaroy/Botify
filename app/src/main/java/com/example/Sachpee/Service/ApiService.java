@@ -121,7 +121,7 @@ public interface ApiService {
     @POST("/zalopay/payment")
     Call<PaymentResponse> createPayment(@Body PaymentRequest paymentRequest);
 
-    @GET("/zalopay/check-status-order/{idBill}")  // Đường dẫn tương ứng với API của bạn
+    @GET("/zalopay/check-status-order/{idBill}")
     Call<StatusResponse> checkOrderStatus(@Path("idBill") int idBill);
 }
 
