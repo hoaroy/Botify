@@ -1,5 +1,5 @@
 package com.example.Sachpee.Adapter;
-//TODO Check this later next ProductFragemnt and productadapter
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.Sachpee.Activity.Callback.OnCartUpdateListener;
 import com.example.Sachpee.Model.Cart;
 import com.example.Sachpee.R;
 import com.example.Sachpee.Service.ApiClient;
@@ -35,10 +36,11 @@ import retrofit2.Response;
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.viewHolder> {
     private List<Cart> list;
     private ApiService apiService;
+    private OnCartUpdateListener cartUpdateListener;
 
-    public CartAdapter(List<Cart> list) {
+    public CartAdapter(List<Cart> list, OnCartUpdateListener listener) {
         this.list = list;
-        // Khởi tạo API service
+        this.cartUpdateListener = listener;
         apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
     }
 
@@ -78,7 +80,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.viewHolder> {
             Log.d("CartAdapter", "Increasing amount of product ID: " + cart.getIdCart() + " to " + amount);
 
             // Cập nhật số lượng sản phẩm qua API
-            updateCartQuantity(String.valueOf(cart.getIdCart()), amount, cart.getPriceProduct()); // Chuyển đổi cart.getIdCart() thành String
+            updateCartQuantity(String.valueOf(cart.getIdCart()), amount, cart.getPriceProduct(),position); // Chuyển đổi cart.getIdCart() thành String
         });
 
             // Xử lý khi nhấn nút giảm số lượng sản phẩm
@@ -87,7 +89,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.viewHolder> {
 
             if (amount == 0) {
                 // Xóa sản phẩm khi số lượng bằng 0
-                deleteProduct(String.valueOf(cart.getIdCart())); // Chuyển đổi cart.getIdCart() thành String
+                deleteProduct(String.valueOf(cart.getIdCart()),position); // Chuyển đổi cart.getIdCart() thành String
                 Log.d("CartAdapter", "Product ID: " + cart.getIdCart() + " has been removed.");
             } else {
                 holder.tvAmountProduct.setText(String.valueOf(amount));
@@ -95,13 +97,13 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.viewHolder> {
                 Log.d("CartAdapter", "Decreasing amount of product ID: " + cart.getIdCart() + " to " + amount);
 
                 // Cập nhật số lượng sản phẩm qua API
-                updateCartQuantity(String.valueOf(cart.getIdCart()), amount, cart.getPriceProduct()); // Chuyển đổi cart.getIdCart() thành String
+                updateCartQuantity(String.valueOf(cart.getIdCart()), amount, cart.getPriceProduct(),position); // Chuyển đổi cart.getIdCart() thành String
             }
         });
 
         // Xử lý khi nhấn nút xóa sản phẩm
         holder.imgDelete.setOnClickListener(view -> {
-            deleteProduct(String.valueOf(cart.getIdCart())); // Chuyển đổi cart.getIdCart() thành String
+            deleteProduct(String.valueOf(cart.getIdCart()),position); // Chuyển đổi cart.getIdCart() thành String
             Log.d("CartAdapter", "Product ID: " + cart.getIdCart() + " has been deleted.");
         });
 
@@ -134,59 +136,82 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.viewHolder> {
 
 
     // Phương thức cập nhật số lượng sản phẩm qua API
-    private void updateCartQuantity(String idCart, int amount, int priceProduct) {
-        // Tạo Map chứa các trường cần cập nhật
+    private void updateCartQuantity(String idCart, int amount, int priceProduct, int position) {
         Map<String, Object> updates = new HashMap<>();
         updates.put("numberProduct", amount);
         updates.put("totalPrice", amount * priceProduct);
 
-        // Gọi API với Map
         Call<Void> call = apiService.updateCartQuantity(Integer.parseInt(idCart), updates);
         call.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
                     Log.d("CartAdapter", "Successfully updated numberProduct and totalPrice for product ID: " + idCart);
+
+                    // Cập nhật dữ liệu cục bộ
+                    Cart updatedCart = list.get(position);
+                    updatedCart.setNumberProduct(amount);
+                    updatedCart.setTotalPrice(amount * priceProduct);
+
+                    // Thông báo adapter về sự thay đổi
+                    notifyItemChanged(position);
+
+                    // (Tùy chọn) Thông báo cho Fragment hoặc Activity để cập nhật tổng giỏ hàng
+                    if (cartUpdateListener != null) {
+                        cartUpdateListener.onCartUpdated();
+                    }
                 } else {
                     Log.e("CartAdapter", "Failed to update numberProduct for product ID: " + idCart +
                             ", Response Code: " + response.code() + ", Message: " + response.message());
+                    // Hiển thị thông báo lỗi cho người dùng nếu cần
                 }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
                 Log.e("CartAdapter", "Error updating numberProduct for product ID: " + idCart, t);
+                // Hiển thị thông báo lỗi cho người dùng nếu cần
             }
         });
     }
+
 
 
 
     // Phương thức xóa sản phẩm qua API
 
-    private void deleteProduct(String idCart) {
-        Call<Void> call = apiService.deleteCartItem(Integer.parseInt(idCart)); // Chuyển đổi idCart sang int
+    private void deleteProduct(String idCart, int position) {
+        Call<Void> call = apiService.deleteCartItem(Integer.parseInt(idCart));
         call.enqueue(new Callback<Void>() {
             @Override
-
-
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
                     Log.d("CartAdapter", "Successfully deleted product ID: " + idCart);
+
+                    // Xóa sản phẩm khỏi danh sách cục bộ
+                    list.remove(position);
+
+                    // Thông báo adapter về sự thay đổi
+                    notifyItemRemoved(position);
+
+                    // (Tùy chọn) Thông báo cho Fragment hoặc Activity để cập nhật tổng giỏ hàng
+                    if (cartUpdateListener != null) {
+                        cartUpdateListener.onCartUpdated();
+                    }
                 } else {
-                    // Log the response body for more information
                     Log.e("CartAdapter", "Failed to delete product ID: " + idCart + ", Response Code: " + response.code() + ", Message: " + response.message());
+                    // Hiển thị thông báo lỗi cho người dùng nếu cần
                 }
             }
-
-
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
                 Log.e("CartAdapter", "Error deleting product ID: " + idCart, t);
+                // Hiển thị thông báo lỗi cho người dùng nếu cần
             }
         });
     }
+
 
 }
 

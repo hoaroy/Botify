@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.Sachpee.Activity.Callback.OnCartUpdateListener;
 import com.example.Sachpee.Adapter.CartAdapter;
 import com.example.Sachpee.Model.Bill;
 import com.example.Sachpee.Model.Cart;
@@ -43,7 +44,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 //TODO Check this later next cartadapter
-public class CartActivity extends AppCompatActivity {
+public class CartActivity extends AppCompatActivity implements OnCartUpdateListener {
 
     public static final String TAG = "CartActivity";
     private RecyclerView rvCart;
@@ -97,7 +98,7 @@ public class CartActivity extends AppCompatActivity {
         list = getCartProduct();
         linearLayoutManager = new LinearLayoutManager(getApplicationContext());
         rvCart.setLayoutManager(linearLayoutManager);
-        adapter = new CartAdapter(list);
+        adapter = new CartAdapter(list,this);
         rvCart.setAdapter(adapter);
         tvTotalPrice = findViewById(R.id.tv_CartActivity_totalPrice);
         tv1 = findViewById(R.id.tv1_CartActivity_totalPrice);
@@ -111,7 +112,20 @@ public class CartActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onCartUpdated() {
+        // Cập nhật tổng giỏ hàng hoặc các thành phần UI khác
+        updateTotalCart();
+    }
 
+    private void updateTotalCart() {
+        int total = 0;
+        for (Cart cart : list) {
+            total += cart.getTotalPrice();
+        }
+//        tvTotalPrice = findViewById(R.id.tv_CartActivity_totalPrice);
+        tvTotalPrice.setText(" " + NumberFormat.getInstance().format(total) + " ");
+    }
     public List<Cart> getCartProduct() {
         SharedPreferences preferences = getSharedPreferences("My_User", MODE_PRIVATE);
         String user = preferences.getString("username", "");
