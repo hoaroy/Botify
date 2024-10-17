@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:orientation="vertical">
+
+    <!-- EditText cho author -->
+    <EditText
+        android:id="@+id/etAuthor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Tác giả" />
+
+    <!-- EditText cho description -->
+    <EditText
+        android:id="@+id/etDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Mô tả" />
+
+    <!-- Nút để thêm chi tiết -->
+    <Button
+        android:id="@+id/btnAddDetail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Thêm chi tiết"
+        android:layout_gravity="end"
+        android:layout_marginTop="10dp"/>
+</LinearLayout>

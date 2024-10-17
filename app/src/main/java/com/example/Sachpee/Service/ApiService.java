@@ -6,6 +6,7 @@ import com.example.Sachpee.Model.Partner;
 import com.example.Sachpee.Model.PaymentRequest;
 import com.example.Sachpee.Model.PaymentResponse;
 import com.example.Sachpee.Model.Product;
+import com.example.Sachpee.Model.ProductDetail;
 import com.example.Sachpee.Model.ProductTop;
 import com.example.Sachpee.Model.StatusResponse;
 import com.example.Sachpee.Model.User;
@@ -116,12 +117,14 @@ public interface ApiService {
     @GET("/bills/{idPartner}")
     Call<List<Bill>> getBillsByPartner(@Path("idPartner") String idPartner);
 
-
     //payment
     @POST("/zalopay/payment")
     Call<PaymentResponse> createPayment(@Body PaymentRequest paymentRequest);
 
     @GET("/zalopay/check-status-order/{idBill}")
     Call<StatusResponse> checkOrderStatus(@Path("idBill") int idBill);
+
+    @POST("details")
+    Call<Void> addProductDetail(@Body ProductDetail productDetail);
 }
 

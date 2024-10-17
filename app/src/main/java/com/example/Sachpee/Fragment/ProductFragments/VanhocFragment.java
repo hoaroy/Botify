@@ -4,7 +4,6 @@ package com.example.Sachpee.Fragment.ProductFragments;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -17,7 +16,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.Sachpee.Adapter.ProductAdapter;
-
 import com.example.Sachpee.Model.Product;
 import com.example.Sachpee.R;
 import com.example.Sachpee.Service.ApiClient;

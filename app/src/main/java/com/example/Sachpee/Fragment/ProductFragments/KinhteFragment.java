@@ -2,8 +2,10 @@ package com.example.Sachpee.Fragment.ProductFragments;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
+import android.app.AlertDialog;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -13,9 +15,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.example.Sachpee.Adapter.ProductAdapter;
 import com.example.Sachpee.Model.Product;
+import com.example.Sachpee.Model.ProductDetail;
 import com.example.Sachpee.R;
 import com.example.Sachpee.Service.ApiClient;
 import com.example.Sachpee.Service.ApiService;
@@ -54,6 +59,69 @@ public class KinhteFragment extends Fragment {
         adapter = new ProductAdapter(listKinhte,fragment,getContext());
         rvKinhte.setAdapter(adapter);
         rvKinhte.setLayoutManager(new GridLayoutManager(getContext(), 2));
+
+        adapter.setOnProductClickListener(new ProductAdapter.OnProductClickListener() {
+            @Override
+            public void onAddDetailClick(Product product) {
+                addDetail(product);
+            }
+        });
+    }
+    // Thêm chi tiết sản phẩm
+    // Thêm chi tiết sản phẩm
+    private void addDetail(Product product) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Thêm chi tiết cho sản phẩm: " + product.getNameProduct());
+
+        // Thiết lập layout cho dialog
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_detail, null);
+        builder.setView(dialogView);
+
+        EditText etAuthor = dialogView.findViewById(R.id.etAuthor);
+        EditText etDescription = dialogView.findViewById(R.id.etDescription);
+        Button btnAddDetail = dialogView.findViewById(R.id.btnAddDetail);
+
+        // Thiết lập sự kiện click cho nút Lưu
+        builder.setPositiveButton("Lưu", (dialog, which) -> {
+            String author = etAuthor.getText().toString();
+            String description = etDescription.getText().toString();
+
+            // Kiểm tra thông tin người dùng nhập
+            if (author.isEmpty() || description.isEmpty()) {
+                Toast.makeText(getContext(), "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Lấy thông tin sản phẩm từ routes/products.js
+            int codeCategory = product.getCodeCategory(); // Lấy từ product
+            String nameProduct = product.getNameProduct(); // Lấy từ product
+            String imgProduct = product.getImgProduct(); // Lấy từ product
+
+            // Tạo đối tượng ProductDetail
+            ProductDetail productDetail = new ProductDetail(codeCategory, nameProduct, imgProduct, author, description);
+
+            // Gọi API để lưu dữ liệu vào database
+            ApiService apiService = ApiClient.getRetrofitInstance().create(ApiService.class);
+            Call<Void> call = apiService.addProductDetail(productDetail);
+            call.enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(getContext(), "Chi tiết sản phẩm đã được lưu!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getContext(), "Lỗi khi lưu chi tiết sản phẩm!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
+        builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
+        builder.show();
     }
 
     public void getKinhteProducts() {
