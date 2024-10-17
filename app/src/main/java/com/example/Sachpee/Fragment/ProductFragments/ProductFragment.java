@@ -104,6 +104,14 @@ public class ProductFragment extends Fragment {
                         break;
                     case 3:tab.setText("Giáo dục ");
                         break;
+                    case 4: tab.setText("Thiếu nhi");
+                        break;
+                    case 5: tab.setText("Hồi ký");
+                        break;
+                    case 6:tab.setText("Giáo khoa");
+                        break;
+                    case 7:tab.setText("Ngoại ngữ ");
+                        break;
                 }
             }
         }).attach();

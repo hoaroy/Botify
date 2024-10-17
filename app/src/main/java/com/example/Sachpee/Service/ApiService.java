@@ -73,7 +73,7 @@ public interface ApiService {
     @POST("/products/")
     Call<Void> addProduct(@Body Product product);
 
-    @PUT("/products/{codeProduct}")
+    @PATCH("/products/{codeProduct}")
     Call<Void> updateProduct(@Path("codeProduct") int codeProduct, @Body Product product);
 
     @DELETE("/products/{codeProduct}")
