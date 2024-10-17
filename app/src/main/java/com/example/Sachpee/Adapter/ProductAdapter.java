@@ -47,11 +47,20 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
     private List<Cart> listCart = new ArrayList<>(); // Khởi tạo danh sách giỏ hàng
     private ProductFragment fragment;
     private Context context;
+    private List<Product> products;
+    private OnProductClickListener listener;
 
+    public interface OnProductClickListener {
+        void onAddDetailClick(Product product);
+    }
+    public void setOnProductClickListener(OnProductClickListener listener) {
+        this.listener = listener;
+    }
     public ProductAdapter(List<Product> list, ProductFragment fragment, Context context) {
         this.list = list;
         this.fragment = fragment;
         this.context = context;
+        this.products = products != null ? products : new ArrayList<>();
     }
 
     @NonNull
@@ -64,11 +73,17 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        Product product = list.get(position);
+
+        holder.btnDetail.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onAddDetailClick(product);
+            }
+        });
         SharedPreferences preferences = context.getSharedPreferences("My_User", Context.MODE_PRIVATE);
         String user = preferences.getString("username", "");
         String role = preferences.getString("role", "");
 
-        Product product = list.get(position);
         NumberFormat numberFormat = new DecimalFormat("#,##0");
 
         // Gọi getAllCart() để lấy danh sách giỏ hàng
@@ -80,25 +95,25 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         holder.tvNameProduct.setText(String.valueOf(product.getNameProduct()));
         holder.tvPriceProduct.setText(numberFormat.format(product.getPriceProduct()) + " đ");
         holder.cardProduct.setOnClickListener(view -> {
-                if (role.equals("admin") || role.equals("partner")) {
-                    if (holder.btnUpdateProduct.getVisibility() == View.VISIBLE || holder.btnDeleteProduct.getVisibility() == View.VISIBLE) {
-                        holder.btnUpdateProduct.setVisibility(View.GONE);
-                        holder.btnDeleteProduct.setVisibility(View.GONE);
-                    } else {
-                        holder.btnUpdateProduct.setVisibility(View.VISIBLE);
-                        holder.btnDeleteProduct.setVisibility(View.VISIBLE);
-                    }
+            if (role.equals("admin") || role.equals("partner")) {
+                if (holder.btnUpdateProduct.getVisibility() == View.VISIBLE || holder.btnDeleteProduct.getVisibility() == View.VISIBLE) {
+                    holder.btnUpdateProduct.setVisibility(View.GONE);
+                    holder.btnDeleteProduct.setVisibility(View.GONE);
+                } else {
+                    holder.btnUpdateProduct.setVisibility(View.VISIBLE);
+                    holder.btnDeleteProduct.setVisibility(View.VISIBLE);
                 }
-            });
-            holder.btnUpdateProduct.setOnClickListener(view -> {
-                fragment.dialogProduct(product, 1, context);
-            });
-            holder.btnDeleteProduct.setOnClickListener(view -> {
-                showDialogDelete(product);
-            });
+            }
+        });
+        holder.btnUpdateProduct.setOnClickListener(view -> {
+            fragment.dialogProduct(product, 1, context);
+        });
+        holder.btnDeleteProduct.setOnClickListener(view -> {
+            showDialogDelete(product);
+        });
 
-            holder.btn_addCart.setOnClickListener(view -> {
-                if (!user.equals("")) {
+        holder.btn_addCart.setOnClickListener(view -> {
+            if (!user.equals("")) {
                 StringBuilder str = new StringBuilder();
                 Cart cart = new Cart();
                 cart.setUserClient(user);
@@ -140,17 +155,11 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
                 } else {
                     addProductCart(cart);
                 }
-                }else {
-                    showDialogLogin();
-                }
-            });
-
-
-
+            }else {
+                showDialogLogin();
+            }
+        });
     }
-
-
-
 
     @Override
     public int getItemCount() {
@@ -172,7 +181,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         private ImageView imgProduct;
         private CardView cardProduct;
         private Button btnUpdateProduct, btnDeleteProduct, btn_addCart;
-
+        Button btnDetail;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvNameProduct = itemView.findViewById(R.id.tvNameProduct_item);
@@ -182,6 +191,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
             btnUpdateProduct = itemView.findViewById(R.id.btn_updateProduct_item);
             btnDeleteProduct = itemView.findViewById(R.id.btn_deleteProduct_item);
             btn_addCart = itemView.findViewById(R.id.btn_addCart_item);
+            btnDetail = itemView.findViewById(R.id.btnDetail);
         }
     }
 
@@ -295,5 +305,4 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
-
 }

@@ -71,4 +71,15 @@
     <string name="main_slider_description">main slider description</string>
     <string name="sach_moi">Sách mới</string>
 
+    <string-array name="category_array">
+        <item>1 - Văn học</item>
+        <item>2 - Kinh tế</item>
+        <item>3 - Tâm lý</item>
+        <item>4 - Giáo dục</item>
+        <item>5 - Thiếu nhi</item>
+        <item>6 - Hồi ký</item>
+        <item>7 - Giáo khoa</item>
+        <item>8 - Ngoại ngữ</item>
+    </string-array>
+
 </resources>
